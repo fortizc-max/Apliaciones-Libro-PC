@@ -909,46 +909,12 @@ function getVal(q) {
 }
 
 function computeScale1() {
-  // Items: Q7, Q21, Q24, Q25, Q28, Q29, Q30, Q31, Q33, Q34rescaled, Q35rescaled
-  // Q34, Q35 original 1-5, rescaled to 1-4: [(val-1)*3/4]+1
+  // EXTREMIDAD SUPERIOR Y FUNCIÓN FÍSICA
+  // Items: Q1, Q2, Q3, Q4, Q5, Q6, Q8, Q32 (8 ítems, mín 4)
+  // Fuente: PediatricScoring.xls — Upper Extremity and Physical Function Core Scale
   // "5" (too young) = missing
-  const raw = {};
-  [7,21,24,25,28,29,30,31,33].forEach(q => {
-    let v = getVal(q);
-    if (v === 5) v = null; // too young = missing
-    raw['Q'+q] = v;
-  });
-  // Q34 rescaled
-  let q34 = getVal(34);
-  if (q34 === 5) q34 = null;
-  raw.Q34r = q34 !== null ? (q34-1)*3/4+1 : null;
-  // Q35 rescaled
-  let q35 = getVal(35);
-  if (q35 === 5) q35 = null;
-  raw.Q35r = q35 !== null ? (q35-1)*3/4+1 : null;
-
-  const items = [raw.Q7, raw.Q21, raw.Q24, raw.Q25, raw.Q28, raw.Q29, raw.Q30, raw.Q31, raw.Q33, raw.Q34r, raw.Q35r];
-  const valid = items.filter(v => v !== null);
-  const nValid = valid.length;
-  const nRequired = 6;
-
-  if (nValid < nRequired) return { std: null, norm: null, nValid, nRequired, nTotal: 11 };
-
-  const mean = valid.reduce((a,b) => a+b, 0) / nValid;
-  const std = ((4 - mean) / 3) * 100;
-  const norm = 50 + 10 * (std - NORMS.s1.mean) / NORMS.s1.sd;
-  return { std: Math.round(std), norm: Math.round(norm), nValid, nRequired, nTotal: 11 };
-}
-
-function computeScale2() {
-  // Items: Q1, Q2, Q3, Q5, Q6, Q8, Q32
-  // Plus Q17rescaled (pain item, reversed): Q17 original 1-5, rescaled: [(4-Q17)*4/3]+1 → range 1-5
-  // "5" (too young) = missing on Q5, Q6, Q8, Q32
   const items = [];
-  [1,2,3].forEach(q => {
-    items.push(getVal(q));
-  });
-  [5,6,8,32].forEach(q => {
+  [1,2,3,4,5,6,8,32].forEach(q => {
     let v = getVal(q);
     if (v === 5) v = null;
     items.push(v);
@@ -962,59 +928,100 @@ function computeScale2() {
 
   const mean = valid.reduce((a,b) => a+b, 0) / nValid;
   const std = ((4 - mean) / 3) * 100;
-  const norm = 50 + 10 * (std - NORMS.s2.mean) / NORMS.s2.sd;
+  const norm = 50 + 10 * (std - NORMS.s1.mean) / NORMS.s1.sd;
   return { std: Math.round(std), norm: Math.round(norm), nValid, nRequired, nTotal: 8 };
 }
 
-function computeScale3() {
-  // Main items: Q18, Q19, Q20, Q21 (already in s1), Q22, Q23, Q36, Q44, Q52
-  // Plus sports participation: Q36 recoded if Q42=1 or Q43=1; Q44 if Q50=1 or Q51=1; Q52 if Q58=1 or Q59=1
-  // Using simplified core 12 items per Excel labels:
-  // Q18, Q19, Q20, Q22, Q23, Q36, Q44, Q52, Q9(walk block?), Q16(rec outdoor), Q26rescaled, Q27rescaled
-  // From Excel: items are Q18-Q25 (some), Q26, Q27 rescaled, Q28-Q33, Q36, Q44, Q52
-  // Let's use the cleaner set identifiable from the Excel notes:
-  // Core sports items with "5=too young" as missing:
-
-  let items = [];
-  // Q18, Q19, Q20: help needed items (1-5, 5=too young)
-  [18,19,20].forEach(q => {
+function computeScale2() {
+  // TRANSFERENCIAS Y MOVILIDAD BÁSICA
+  // Items: Q7,Q21,Q24,Q25,Q28,Q29,Q30,Q31,Q33,Q34rescaled,Q35rescaled (11 ítems, mín 7)
+  // Fuente: PediatricScoring.xls — Transfer and Basic Mobility Core Scale
+  // Q34, Q35: escala 1-5 → rescalado 1-4: [(val-1)*3/4]+1
+  // "5" (too young) = missing
+  const items = [];
+  [7,21,24,25,28,29,30,31,33].forEach(q => {
     let v = getVal(q);
     if (v === 5) v = null;
     items.push(v);
   });
-  // Q22, Q23 (1-5, 5=too young)
-  [22,23].forEach(q => {
-    let v = getVal(q);
-    if (v === 5) v = null;
-    items.push(v);
-  });
-  // Q26, Q27: 1-5 rescaled to 1-4: [(val-1)*3/4]+1
-  [26,27].forEach(q => {
-    let v = getVal(q);
-    if (v === 5) v = null;
-    if (v !== null) v = (v-1)*3/4+1;
-    items.push(v);
-  });
-  // Q36: participation in recreational activities (1-4), recode if Q42=1 or Q43=1 → missing
-  let q36 = getVal(36);
-  if (q36 === 4 && (getVal(42)===1 || getVal(43)===1)) q36 = null;
-  items.push(q36);
-  // Q44: recode if Q50=1 or Q51=1 → missing
-  let q44 = getVal(44);
-  if (q44 === 4 && (getVal(50)===1 || getVal(51)===1)) q44 = null;
-  items.push(q44);
-  // Q52: recode if Q58=1 or Q59=1 → missing
-  let q52 = getVal(52);
-  if (q52 === 4 && (getVal(58)===1 || getVal(59)===1)) q52 = null;
-  items.push(q52);
-  // Q9 (walk 3 blocks, 1-4, 4=too young by context—leave as is if null)
-  items.push(getVal(9));
-  // Q16 (get on bus, 1-4)
-  items.push(getVal(16));
+  // Q34 rescaled 1-5 → 1-4
+  let q34 = getVal(34);
+  if (q34 === 5) q34 = null;
+  items.push(q34 !== null ? (q34-1)*3/4+1 : null);
+  // Q35 rescaled 1-5 → 1-4
+  let q35 = getVal(35);
+  if (q35 === 5) q35 = null;
+  items.push(q35 !== null ? (q35-1)*3/4+1 : null);
 
   const valid = items.filter(v => v !== null);
   const nValid = valid.length;
   const nRequired = 7;
+
+  if (nValid < nRequired) return { std: null, norm: null, nValid, nRequired, nTotal: 11 };
+
+  const mean = valid.reduce((a,b) => a+b, 0) / nValid;
+  const std = ((4 - mean) / 3) * 100;
+  const norm = 50 + 10 * (std - NORMS.s2.mean) / NORMS.s2.sd;
+  return { std: Math.round(std), norm: Math.round(norm), nValid, nRequired, nTotal: 11 };
+}
+
+function computeScale3() {
+  // DEPORTES Y FUNCIÓN FÍSICA
+  // Items: Q18,Q19,Q20,Q22,Q23,Q26r,Q27r,Q36,Q44,Q52,Q60r,Q66r (12 ítems, mín 6)
+  // Fuente: PediatricScoring.xls — Sports and Physical Functioning Core Scale
+  let items = [];
+
+  // Q18, Q19, Q20, Q22, Q23: 1-5, "5"=too young=missing
+  [18,19,20,22,23].forEach(q => {
+    let v = getVal(q);
+    if (v === 5) v = null;
+    items.push(v);
+  });
+
+  // Q26 rescaled 1-5 → 1-4: [(val-1)*3/4]+1; "5"=missing
+  let q26 = getVal(26);
+  if (q26 === 5) q26 = null;
+  items.push(q26 !== null ? (q26-1)*3/4+1 : null);
+
+  // Q27 rescaled 1-5 → 1-4: [(val-1)*3/4]+1; "5"=missing
+  let q27 = getVal(27);
+  if (q27 === 5) q27 = null;
+  items.push(q27 !== null ? (q27-1)*3/4+1 : null);
+
+  // Q36: recode to missing if Q36=4 AND (Q42=1 OR Q43=1)
+  let q36 = getVal(36);
+  if (q36 === 4 && (getVal(42)===1 || getVal(43)===1)) q36 = null;
+  items.push(q36);
+
+  // Q44: recode to missing if Q44=4 AND (Q50=1 OR Q51=1)
+  let q44 = getVal(44);
+  if (q44 === 4 && (getVal(50)===1 || getVal(51)===1)) q44 = null;
+  items.push(q44);
+
+  // Q52: recode to missing if Q52=4 AND (Q58=1 OR Q59=1)
+  let q52 = getVal(52);
+  if (q52 === 4 && (getVal(58)===1 || getVal(59)===1)) q52 = null;
+  items.push(q52);
+
+  // Q60: Step1 recode to missing if Q60=3 AND Q65=1
+  //      Step2 if not missing: Q60rescaled = [(Q60-1)*3/2]+1 → rango 1-4
+  let q60 = getVal(60);
+  if (q60 === 3 && getVal(65)===1) q60 = null;
+  if (q60 !== null) q60 = (q60-1)*3/2+1;
+  items.push(q60);
+
+  // Q66: Step1 recode to missing if Q66=4
+  //      Step2 recode to missing if Q66=3 AND (Q72=1 OR Q73=1)
+  //      Step3 if not missing: Q66rescaled = [(Q66-1)*3/2]+1 → rango 1-4
+  let q66 = getVal(66);
+  if (q66 === 4) q66 = null;
+  if (q66 === 3 && (getVal(72)===1 || getVal(73)===1)) q66 = null;
+  if (q66 !== null) q66 = (q66-1)*3/2+1;
+  items.push(q66);
+
+  const valid = items.filter(v => v !== null);
+  const nValid = valid.length;
+  const nRequired = 6;
 
   if (nValid < nRequired) return { std: null, norm: null, nValid, nRequired, nTotal: 12 };
 
@@ -1025,41 +1032,33 @@ function computeScale3() {
 }
 
 function computeScale4() {
-  // Items: Q17 (direct), Q75rescaled, Q76
-  //
-  // Q17: 1–4 scale (1=nunca necesita ayuda = sin carga = MEJOR)
-  //   → se usa DIRECTAMENTE (no con el rescalado de Transferencias que lo invertiría)
-  //   → rango efectivo 1–4; se extiende a 1–5 promediando con los otros ítems
-  //
-  // Q75: 1–6 → rescalado a 1–5: [(Q75-1)*4/5]+1
-  //   → 6 = "No aplica" se trata como faltante
-  //
-  // Q76: 1–5 directo (1=ningún dolor = MEJOR)
-  //
-  // Dirección unificada: 1=mejor, 5=peor (más dolor)
-  // Fórmula estandarizada: std = (5 - media) / 4 × 100
-  //   → rango publicado: mínimo −17.22, máximo 55.51 (verificado)
+  // DOLOR Y COMODIDAD
+  // Items: Q17rescaled, Q75rescaled, Q76 (3 ítems, mín 2)
+  // Fuente: PediatricScoring.xls — Pain/Comfort Core Scale
+  // Q17rescaled = [(4 - Q17) * 4/3] + 1  → rango 1-5
+  // Q75rescaled = [(Q75 - 1) * 4/5] + 1  → rango 1-5; Q75=6 (no aplica) = missing
+  // Q76: 1-5 directo
+  // Std = [(4 - (mean - 1)) / 4] * 100
 
   let q17 = getVal(17);
-  // Q17 rango 1-4, usado directo para escala de dolor
-  const q17_pain = q17; // null si no respondido
+  let q17r = q17 !== null ? (4 - q17) * 4/3 + 1 : null;
 
   let q75 = getVal(75);
-  if (q75 === 6) q75 = null; // "No aplica" = faltante
-  let q75r = q75 !== null ? (q75 - 1) * 4/5 + 1 : null; // → rango 1–5
+  if (q75 === 6) q75 = null;
+  let q75r = q75 !== null ? (q75-1)*4/5+1 : null;
 
-  let q76 = getVal(76); // 1–5 directo
+  let q76 = getVal(76);
 
-  const items = [q17_pain, q75r, q76];
+  const items = [q17r, q75r, q76];
   const valid = items.filter(v => v !== null);
   const nValid = valid.length;
   const nRequired = 2;
 
   if (nValid < nRequired) return { std: null, norm: null, nValid, nRequired, nTotal: 3 };
 
-  const mean = valid.reduce((a, b) => a + b, 0) / nValid;
-  // Fórmula correcta para rango 1–5, dirección: 1=mejor → std=100, 5=peor → std=0
-  const std = (5 - mean) / 4 * 100;
+  const mean = valid.reduce((a,b) => a+b, 0) / nValid;
+  // Fórmula oficial: [(4 - (mean - 1)) / 4] * 100
+  const std = ((4 - (mean - 1)) / 4) * 100;
   const norm = 50 + 10 * (std - NORMS.s4.mean) / NORMS.s4.sd;
   return { std: Math.round(std), norm: Math.round(norm), nValid, nRequired, nTotal: 3 };
 }
@@ -1081,7 +1080,7 @@ function computeScale5() {
 
   const mean = valid.reduce((a,b) => a+b, 0) / nValid;
   // Happiness: standardized = [5 - mean/4]*100
-  const std = (5 - mean / 4) * 100;
+  const std = ((5 - mean) / 4) * 100; // Fuente: PediatricScoring.xls
   const norm = 50 + 10 * (std - NORMS.s5.mean) / NORMS.s5.sd;
   return { std: Math.round(std), norm: Math.round(norm), nValid, nRequired, nTotal: 5 };
 }
@@ -1334,35 +1333,27 @@ function renderQCard(qNum, text, opts, tag, note) {
 }
 
 function renderScale1() {
-  const color = 'var(--scale1)';
   return `
   <div>
     <div class="section-header">
       <div class="section-badge" style="background:var(--accent-light);color:var(--accent)">ES</div>
       <div>
         <div class="section-title" style="color:var(--scale1)">Extremidad Superior y Función Física</div>
-        <div class="section-subtitle">11 ítems · Mínimo 6 para calcular la puntuación</div>
+        <div class="section-subtitle">11 ítems · Mínimo 7 para calcular la puntuación</div>
       </div>
     </div>
     <div class="section-note">
-      <strong>Escala de respuesta:</strong> 1 = Sin dificultad · 4 = No puede hacerlo · 5 = Muy pequeño para esta actividad (se trata como dato faltante)
+      <strong>Escala de respuesta:</strong> 1 = Sin dificultad · 2 = Poca dificultad · 3 = Mucha dificultad · 4 = No puede hacerlo · 5 = Muy pequeño para esta actividad (se trata como dato faltante)
     </div>
 
-    ${renderQCard(7, '¿Puede su hijo(a) cargar libros pesados?', OPTS_5_ACT, 'ES')}
-    ${renderQCard(21, '¿Puede su hijo(a) usar tenedor y cuchara?', OPTS_5_ACT, 'ES')}
-    ${renderQCard(24, '¿Puede su hijo(a) peinarse?', OPTS_5_ACT, 'ES')}
-    ${renderQCard(25, '¿Puede su hijo(a) abrochar botones?', OPTS_5_ACT, 'ES')}
-    ${renderQCard(28, '¿Puede su hijo(a) escribir con un lápiz?', OPTS_5_ACT, 'ES')}
-    ${renderQCard(29, '¿Puede su hijo(a) girar perillas de puertas?', OPTS_5_ACT, 'ES')}
-    ${renderQCard(30, '¿Puede su hijo(a) ponerse el abrigo/chaqueta?', OPTS_5_ACT, 'ES')}
-    ${renderQCard(31, '¿Puede su hijo(a) abrir un frasco que ya ha sido abierto antes?', OPTS_5_ACT, 'ES')}
-    ${renderQCard(33, '¿Puede su hijo(a) verter líquido de un recipiente (ej. servir un vaso)?', OPTS_5_ACT, 'ES')}
-
-    <div class="section-note amber" style="margin-top:1rem">
-      Los siguientes 2 ítems (P34 y P35) usan escala 1–5 y se reescalan internamente a 1–4 para el cálculo.
-    </div>
-    ${renderQCard(34, '¿Puede su hijo(a) subir una escalera de un piso?', OPTS_5_ACT, 'ES · reescalado')}
-    ${renderQCard(35, '¿Puede su hijo(a) caminar una cuadra?', OPTS_5_ACT, 'ES · reescalado')}
+    ${renderQCard(1, '¿Puede su hijo(a) cargar libros pesados?', OPTS_5_ACT, 'ES')}
+    ${renderQCard(2, '¿Puede su hijo(a) servir medio litro de leche (verter de un recipiente grande)?', OPTS_5_ACT, 'ES')}
+    ${renderQCard(3, '¿Puede su hijo(a) abrir un frasco que ya ha sido abierto antes?', OPTS_5_ACT, 'ES')}
+    ${renderQCard(4, '¿Puede su hijo(a) usar tenedor y cuchara?', OPTS_5_ACT, 'ES')}
+    ${renderQCard(5, '¿Puede su hijo(a) peinarse?', OPTS_5_ACT, 'ES')}
+    ${renderQCard(6, '¿Puede su hijo(a) abrochar botones?', OPTS_5_ACT, 'ES')}
+    ${renderQCard(8, '¿Puede su hijo(a) escribir con un lápiz?', OPTS_5_ACT, 'ES')}
+    ${renderQCard(32, '¿Puede su hijo(a) girar perillas de puertas?', OPTS_5_ACT, 'ES')}
 
     <div class="nav-row">
       <div style="display:flex;gap:0.5rem">
@@ -1381,25 +1372,28 @@ function renderScale2() {
       <div class="section-badge" style="background:var(--accent2-light);color:var(--accent2)">TM</div>
       <div>
         <div class="section-title" style="color:var(--scale2)">Transferencias y Movilidad Básica</div>
-        <div class="section-subtitle">8 ítems · Mínimo 4 para calcular la puntuación</div>
+        <div class="section-subtitle">11 ítems · Mínimo 7 para calcular la puntuación</div>
       </div>
     </div>
     <div class="section-note">
-      <strong>Escala de respuesta:</strong> 1 = Sin dificultad · 4 = No puede hacerlo · 5 = Muy pequeño (dato faltante)
+      <strong>Escala de respuesta:</strong> 1 = Sin dificultad · 2 = Poca dificultad · 3 = Mucha dificultad · 4 = No puede hacerlo · 5 = Muy pequeño para esta actividad (se trata como dato faltante)
     </div>
 
-    ${renderQCard(1, '¿Puede su hijo(a) subir y bajar de un autobús?', OPTS_5_ACT, 'TM')}
-    ${renderQCard(2, '¿Puede su hijo(a) estar de pie mientras se lava las manos y la cara en un lavamanos?', OPTS_5_ACT, 'TM')}
-    ${renderQCard(3, '¿Puede su hijo(a) sentarse en una silla regular sin apoyarse?', OPTS_5_ACT, 'TM')}
-    ${renderQCard(5, '¿Puede su hijo(a) subir y bajar de un sanitario o silla?', OPTS_5_ACT, 'TM')}
-    ${renderQCard(6, '¿Puede su hijo(a) entrar y salir de la cama?', OPTS_5_ACT, 'TM')}
-    ${renderQCard(8, '¿Puede su hijo(a) doblarse desde la posición de pie para recoger algo del suelo?', OPTS_5_ACT, 'TM')}
-    ${renderQCard(32, '¿Puede su hijo(a) subir tres pisos de escaleras?', OPTS_5_ACT, 'TM')}
+    ${renderQCard(7, '¿Puede su hijo(a) ponerse el abrigo/chaqueta?', OPTS_5_ACT, 'TM')}
+    ${renderQCard(21, '¿Puede su hijo(a) subir un piso de escaleras?', OPTS_5_ACT, 'TM')}
+    ${renderQCard(24, '¿Puede su hijo(a) caminar una cuadra?', OPTS_5_ACT, 'TM')}
+    ${renderQCard(25, '¿Puede su hijo(a) subir y bajar de un autobús?', OPTS_5_ACT, 'TM')}
+    ${renderQCard(28, '¿Puede su hijo(a) estar de pie mientras se lava las manos y la cara en un lavamanos?', OPTS_5_ACT, 'TM')}
+    ${renderQCard(29, '¿Puede su hijo(a) sentarse en una silla regular sin apoyarse?', OPTS_5_ACT, 'TM')}
+    ${renderQCard(30, '¿Puede su hijo(a) subir y bajar de un sanitario o silla?', OPTS_5_ACT, 'TM')}
+    ${renderQCard(31, '¿Puede su hijo(a) entrar y salir de la cama?', OPTS_5_ACT, 'TM')}
+    ${renderQCard(33, '¿Puede su hijo(a) doblarse desde la posición de pie para recoger algo del suelo?', OPTS_5_ACT, 'TM')}
 
-    <div class="section-note amber" style="margin-top:0.5rem">
-      P17 evalúa necesidad de ayuda para sentarse/pararse y es un ítem compartido con la Escala de Dolor (reescalado internamente).
+    <div class="section-note amber" style="margin-top:1rem">
+      Los siguientes 2 ítems (P34 y P35) usan escala 1–5 y se reescalan internamente a 1–4 para el cálculo: <em>[(valor − 1) × 3/4] + 1</em>
     </div>
-    ${renderQCard(17, '¿Con qué frecuencia su hijo(a) necesita ayuda de otra persona para sentarse y pararse?', OPTS_HELP_4, 'TM/Dolor · reescalado')}
+    ${renderQCard(34, '¿Con qué frecuencia su hijo(a) necesita ayuda de otra persona para sentarse y pararse?', OPTS_5_ACT, 'TM · reescalado')}
+    ${renderQCard(35, '¿Con qué frecuencia su hijo(a) usa dispositivos de asistencia (órtesis, muletas, silla de ruedas) para sentarse y pararse?', OPTS_5_ACT, 'TM · reescalado')}
 
     <div class="nav-row">
       <div style="display:flex;gap:0.5rem">
@@ -1418,40 +1412,34 @@ function renderScale3() {
       <div class="section-badge" style="background:var(--green-light);color:var(--green)">DF</div>
       <div>
         <div class="section-title" style="color:var(--scale3)">Deportes y Función Física</div>
-        <div class="section-subtitle">12 ítems · Mínimo 7 para calcular la puntuación</div>
+        <div class="section-subtitle">12 ítems · Mínimo 6 para calcular la puntuación</div>
       </div>
     </div>
     <div class="section-note">
-      Algunos ítems tienen condiciones de recodificación automática: si el niño "no puede" por estar fuera de temporada o ser muy pequeño, el ítem se trata como faltante.
+      Algunos ítems tienen condiciones de recodificación automática: si el niño "no puede" por estar fuera de temporada o ser muy pequeño, el ítem se trata como dato faltante.
     </div>
 
     ${renderQCard(18, '¿Puede su hijo(a) correr distancias cortas?', OPTS_5_ACT, 'DF')}
     ${renderQCard(19, '¿Puede su hijo(a) montar bicicleta o triciclo?', OPTS_5_ACT, 'DF')}
-    ${renderQCard(20, '¿Puede su hijo(a) caminar más de una milla (aprox. 1.5 km)?', OPTS_5_ACT, 'DF')}
-    ${renderQCard(22, '¿Puede su hijo(a) caminar tres cuadras?', OPTS_5_ACT, 'DF')}
-    ${renderQCard(23, '¿Con qué frecuencia su hijo(a) necesita ayuda de otra persona para caminar?', OPTS_HELP_4, 'DF')}
-    ${renderQCard(9, '¿Con qué frecuencia puede caminar tres cuadras sin ayuda?', [
-      {val:1,label:'Siempre'},{val:2,label:'Casi siempre'},{val:3,label:'A veces'},{val:4,label:'Nunca'}
-    ], 'DF')}
-    ${renderQCard(16, '¿Con qué frecuencia su hijo(a) participa en actividades recreativas al aire libre con otros niños de su edad?', [
-      {val:1,label:'Siempre'},{val:2,label:'Casi siempre'},{val:3,label:'A veces'},{val:4,label:'Nunca'}
-    ], 'DF')}
+    ${renderQCard(20, '¿Puede su hijo(a) subir tres pisos de escaleras?', OPTS_5_ACT, 'DF')}
+    ${renderQCard(22, '¿Puede su hijo(a) caminar más de una milla (aprox. 1.5 km)?', OPTS_5_ACT, 'DF')}
+    ${renderQCard(23, '¿Puede su hijo(a) caminar tres cuadras?', OPTS_5_ACT, 'DF')}
 
     <div class="section-note amber" style="margin-top:0.5rem">
-      Los ítems P26 y P27 usan escala 1–5 y se reescalan a 1–4 automáticamente.
+      P26 y P27 usan escala 1–5 y se reescalan a 1–4 automáticamente: <em>[(valor − 1) × 3/4] + 1</em>
     </div>
-    ${renderQCard(26, '¿Con qué frecuencia en la última semana su hijo(a) se reunió con amigos para hacer actividades?', [
-      {val:1,label:'Todos los días'},{val:2,label:'Varios días'},{val:3,label:'Una vez'},{val:4,label:'Ningún día'},{val:5,label:'Muy pequeño'}
+    ${renderQCard(26, '¿Con qué frecuencia su hijo(a) necesita ayuda de otra persona para caminar y subir escaleras?', [
+      {val:1,label:'Nunca'},{val:2,label:'Casi nunca'},{val:3,label:'A veces'},{val:4,label:'Casi siempre'},{val:5,label:'Muy pequeño'}
     ], 'DF · reescalado')}
-    ${renderQCard(27, '¿Con qué frecuencia en la última semana su hijo(a) participó en educación física/recreo?', [
-      {val:1,label:'Todos los días'},{val:2,label:'Varios días'},{val:3,label:'Una vez'},{val:4,label:'Ningún día'},{val:5,label:'Muy pequeño'}
+    ${renderQCard(27, '¿Con qué frecuencia su hijo(a) usa dispositivos de asistencia (órtesis, muletas, silla de ruedas) para caminar y subir escaleras?', [
+      {val:1,label:'Nunca'},{val:2,label:'Casi nunca'},{val:3,label:'A veces'},{val:4,label:'Casi siempre'},{val:5,label:'Muy pequeño'}
     ], 'DF · reescalado')}
 
     <div style="margin-top:1rem;margin-bottom:0.4rem;font-size:0.82rem;color:var(--text2);font-weight:500">
       Participación en deportes (con recodificación condicional automática)
     </div>
 
-    ${renderQCard(36, '¿Puede su hijo(a) participar en actividades recreativas al aire libre?', [
+    ${renderQCard(36, '¿Puede su hijo(a) participar en actividades recreativas al aire libre con niños de su edad?', [
       {val:1,label:'Sí, siempre'},{val:2,label:'Casi siempre'},{val:3,label:'A veces'},{val:4,label:'No puede'}
     ], 'DF')}
     <div class="question-card" style="background:var(--surface2);border-style:dashed;padding:0.7rem 1.2rem;margin-bottom:0.6rem">
@@ -1460,33 +1448,62 @@ function renderScale3() {
       <div class="options-row">
         <button class="opt-btn ${getVal(42)===1?'selected':''}" onclick="setQ(42,1)">Muy pequeño (P42)</button>
         <button class="opt-btn ${getVal(43)===1?'selected':''}" onclick="setQ(43,1)">Fuera de temporada (P43)</button>
-        <button class="opt-btn ${getVal(42)===0?'selected':''}" onclick="setQ(42,0);setQ(43,0)">Ninguna / N/A</button>
+        <button class="opt-btn ${getVal(42)===0&&getVal(43)===0?'selected':''}" onclick="setQ(42,0);setQ(43,0)">Ninguna / N/A</button>
       </div>
     </div>
 
-    ${renderQCard(44, '¿Puede su hijo(a) participar en juegos de deportes informales?', [
+    ${renderQCard(44, '¿Puede su hijo(a) participar en juegos de deportes informales con niños de su edad?', [
       {val:1,label:'Sí, siempre'},{val:2,label:'Casi siempre'},{val:3,label:'A veces'},{val:4,label:'No puede'}
     ], 'DF')}
     <div class="question-card" style="background:var(--surface2);border-style:dashed;padding:0.7rem 1.2rem;margin-bottom:0.6rem">
-      <div class="question-num">Condicional P44</div>
+      <div class="question-num">Condicional P44 <span class="question-tag">Solo si respondió "No puede" arriba</span></div>
       <div class="question-text" style="font-size:0.82rem;color:var(--text2)">¿La razón es...?</div>
       <div class="options-row">
         <button class="opt-btn ${getVal(50)===1?'selected':''}" onclick="setQ(50,1)">Muy pequeño (P50)</button>
         <button class="opt-btn ${getVal(51)===1?'selected':''}" onclick="setQ(51,1)">Fuera de temporada (P51)</button>
-        <button class="opt-btn ${getVal(50)===0?'selected':''}" onclick="setQ(50,0);setQ(51,0)">Ninguna / N/A</button>
+        <button class="opt-btn ${getVal(50)===0&&getVal(51)===0?'selected':''}" onclick="setQ(50,0);setQ(51,0)">Ninguna / N/A</button>
       </div>
     </div>
 
-    ${renderQCard(52, '¿Puede su hijo(a) participar en deportes a nivel competitivo?', [
+    ${renderQCard(52, '¿Puede su hijo(a) participar en deportes a nivel competitivo con niños de su edad?', [
       {val:1,label:'Sí, siempre'},{val:2,label:'Casi siempre'},{val:3,label:'A veces'},{val:4,label:'No puede'}
     ], 'DF')}
     <div class="question-card" style="background:var(--surface2);border-style:dashed;padding:0.7rem 1.2rem;margin-bottom:0.6rem">
-      <div class="question-num">Condicional P52</div>
+      <div class="question-num">Condicional P52 <span class="question-tag">Solo si respondió "No puede" arriba</span></div>
       <div class="question-text" style="font-size:0.82rem;color:var(--text2)">¿La razón es...?</div>
       <div class="options-row">
         <button class="opt-btn ${getVal(58)===1?'selected':''}" onclick="setQ(58,1)">Muy pequeño (P58)</button>
         <button class="opt-btn ${getVal(59)===1?'selected':''}" onclick="setQ(59,1)">Fuera de temporada (P59)</button>
-        <button class="opt-btn ${getVal(58)===0?'selected':''}" onclick="setQ(58,0);setQ(59,0)">Ninguna / N/A</button>
+        <button class="opt-btn ${getVal(58)===0&&getVal(59)===0?'selected':''}" onclick="setQ(58,0);setQ(59,0)">Ninguna / N/A</button>
+      </div>
+    </div>
+
+    <div style="margin-top:1rem;margin-bottom:0.4rem;font-size:0.82rem;color:var(--text2);font-weight:500">
+      Actividades sociales y escolares (con recodificación condicional automática)
+    </div>
+
+    ${renderQCard(60, '¿Con qué frecuencia en la última semana su hijo(a) se reunió con amigos para hacer actividades?', [
+      {val:1,label:'Todos los días'},{val:2,label:'Varios días'},{val:3,label:'Ningún día'}
+    ], 'DF · reescalado')}
+    <div class="question-card" style="background:var(--surface2);border-style:dashed;padding:0.7rem 1.2rem;margin-bottom:0.6rem">
+      <div class="question-num">Condicional P60 <span class="question-tag">Solo si respondió "Ningún día" arriba</span></div>
+      <div class="question-text" style="font-size:0.82rem;color:var(--text2)">¿La razón por la que no se reunió con amigos es...?</div>
+      <div class="options-row">
+        <button class="opt-btn ${getVal(65)===1?'selected':''}" onclick="setQ(65,1)">No había amigos disponibles (P65)</button>
+        <button class="opt-btn ${getVal(65)===0?'selected':''}" onclick="setQ(65,0)">Otra razón / N/A</button>
+      </div>
+    </div>
+
+    ${renderQCard(66, '¿Con qué frecuencia en la última semana su hijo(a) participó en educación física o recreo?', [
+      {val:1,label:'Todos los días'},{val:2,label:'Varios días'},{val:3,label:'Ningún día'},{val:4,label:'No aplica'}
+    ], 'DF · reescalado')}
+    <div class="question-card" style="background:var(--surface2);border-style:dashed;padding:0.7rem 1.2rem;margin-bottom:0.6rem">
+      <div class="question-num">Condicional P66 <span class="question-tag">Solo si respondió "Ningún día"</span></div>
+      <div class="question-text" style="font-size:0.82rem;color:var(--text2)">¿La razón por la que no participó en educación física es...?</div>
+      <div class="options-row">
+        <button class="opt-btn ${getVal(72)===1?'selected':''}" onclick="setQ(72,1)">No había clases (P72)</button>
+        <button class="opt-btn ${getVal(73)===1?'selected':''}" onclick="setQ(73,1)">No asiste al colegio (P73)</button>
+        <button class="opt-btn ${getVal(72)===0&&getVal(73)===0?'selected':''}" onclick="setQ(72,0);setQ(73,0)">Otra razón / N/A</button>
       </div>
     </div>
 
@@ -1511,14 +1528,14 @@ function renderScale4() {
       </div>
     </div>
     <div class="section-note">
-      <strong>Nota:</strong> Las puntuaciones más altas en esta escala indican <em>mayor bienestar</em> (menos dolor). El ítem P17 ya registrado en la escala anterior se reutiliza aquí con reescalado diferente.
+      <strong>Nota:</strong> Las puntuaciones más altas indican <em>mayor bienestar</em> (menos dolor). El ítem P17 fue registrado en la escala TM; aquí se reutiliza con reescalado diferente: <em>[(4 − valor) × 4/3] + 1</em> → rango 1–5.
     </div>
 
     <div class="question-card ${getVal(17)?'answered':''}" id="qcard-17b">
-      <div class="question-num">P17 <span class="question-tag">Compartido con TM</span></div>
+      <div class="question-num">P17 <span class="question-tag">Compartido con TM · reescalado para DC</span></div>
       <div class="question-text">¿Con qué frecuencia su hijo(a) necesita ayuda de otra persona para sentarse y pararse?</div>
       <div class="options-row">${OPTS_HELP_4.map(o => `<button class="opt-btn ${getVal(17)===o.val?'selected':''}" onclick="setQ(17,${o.val})">${o.label}</button>`).join('')}</div>
-      <div style="font-size:0.72rem;color:var(--text3);margin-top:0.5rem">Se reescala internamente: [(4 − valor) × 4/3] + 1</div>
+      <div style="font-size:0.72rem;color:var(--text3);margin-top:0.5rem">Reescalado automático: [(4 − valor) × 4/3] + 1</div>
     </div>
 
     ${renderQCard(75, '¿Cuánto dolor ha tenido su hijo(a) en la última semana?', [
