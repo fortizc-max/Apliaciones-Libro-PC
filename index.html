@@ -800,11 +800,13 @@ const patient = { nombre:'', hc:'', edad:'', sexo:'', fecha:'' };
 
 // Normative constants (from Excel)
 const NORMS = {
-  s1: { mean: 98.354, sd: 5.68 },
-  s2: { mean: 91.975, sd: 11.49 },
-  s3: { mean: 93.864, sd: 7.39 },
-  s4: { mean: 92.435, sd: 13.75 },
-  s5: { mean: 89.805, sd: 14.10 },
+  // Valores derivados de rangos publicados en PediatricScoring.xls
+  // ES rango [-30,57], TM rango [-123,53], DF rango [-40,57], DC rango [-17,56], BF rango [-14,57]
+  s1: { mean: 91.954, sd: 11.494 },  // Extremidad Superior
+  s2: { mean: 98.295, sd: 5.682 },   // Transferencias y Movilidad
+  s3: { mean: 92.784, sd: 10.309 },  // Deportes y Función Física
+  s4: { mean: 91.781, sd: 13.699 },  // Dolor y Comodidad
+  s5: { mean: 90.141, sd: 14.085 },  // Bienestar / Felicidad
 };
 
 // ─────────────────────────────────────────────
