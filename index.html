@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PODCI — Calculadora de Puntuación</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f3ef;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: #d8d3cb;
+    --text: #1a1814;
+    --text2: #5a5650;
+    --text3: #9a958e;
+    --accent: #2d5a8e;
+    --accent-light: #e8eef6;
+    --accent2: #7a3e2e;
+    --accent2-light: #f6ede8;
+    --green: #2d6b45;
+    --green-light: #e8f3ec;
+    --amber: #8a6020;
+    --amber-light: #f8f0e0;
+    --red: #8a2d2d;
+    --red-light: #f6e8e8;
+    --scale1: #2d5a8e;
+    --scale2: #7a3e2e;
+    --scale3: #2d6b45;
+    --scale4: #5a2d6b;
+    --scale5: #6b5a2d;
+    --radius: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--text);
+    color: white;
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .header-title {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+  .header-title span {
+    color: #adb5c2;
+    font-style: italic;
+    font-size: 0.9rem;
+    margin-left: 0.8rem;
+  }
+  .header-actions { display: flex; gap: 0.5rem; }
+  .btn-header {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    transition: background 0.15s;
+  }
+  .btn-header:hover { background: rgba(255,255,255,0.18); }
+
+  /* ── Layout ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr 300px;
+    gap: 0;
+    min-height: calc(100vh - 56px);
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    background: var(--text);
+    padding: 1.5rem 0;
+    position: sticky;
+    top: 56px;
+    height: calc(100vh - 56px);
+    overflow-y: auto;
+  }
+  .sidebar-section {
+    padding: 0.4rem 1.2rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6a6560;
+    font-weight: 500;
+    margin-top: 1rem;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 1.2rem;
+    cursor: pointer;
+    color: #b0aba5;
+    font-size: 0.82rem;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    text-decoration: none;
+  }
+  .sidebar-item:hover { background: rgba(255,255,255,0.04); color: #e0dbd5; }
+  .sidebar-item.active {
+    background: rgba(255,255,255,0.07);
+    color: white;
+    border-left-color: var(--accent);
+  }
+  .sidebar-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .sidebar-progress {
+    margin-left: auto;
+    font-size: 0.7rem;
+    font-family: 'DM Mono', monospace;
+    color: #5a5550;
+  }
+  .sidebar-progress.done { color: #4a8a64; }
+
+  /* ── Main Content ── */
+  .main {
+    padding: 2rem 2.5rem;
+    max-width: 800px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-badge {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.5rem;
+    font-weight: 400;
+    line-height: 1.2;
+  }
+  .section-subtitle {
+    font-size: 0.78rem;
+    color: var(--text3);
+    margin-top: 0.2rem;
+  }
+  .section-note {
+    background: var(--accent-light);
+    border: 1px solid #c5d5e8;
+    border-radius: var(--radius);
+    padding: 0.7rem 1rem;
+    font-size: 0.78rem;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+  .section-note.amber {
+    background: var(--amber-light);
+    border-color: #d4b06a;
+    color: var(--amber);
+  }
+
+  /* ── Question Cards ── */
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.2rem;
+    margin-bottom: 0.6rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .question-card:hover { border-color: #b8b3ab; box-shadow: var(--shadow); }
+  .question-card.answered { border-left: 3px solid var(--green); }
+
+  .question-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text3);
+    margin-bottom: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .question-tag {
+    background: var(--surface2);
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.65rem;
+    color: var(--text2);
+  }
+  .question-text {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin-bottom: 0.8rem;
+  }
+
+  /* Radio Options */
+  .options-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .opt-btn {
+    padding: 0.35rem 0.7rem;
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    color: var(--text2);
+    transition: all 0.15s;
+    line-height: 1.3;
+    text-align: center;
+  }
+  .opt-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .opt-btn.selected { border-color: var(--accent); background: var(--accent); color: white; }
+  .opt-btn.missing { border-color: var(--text3); color: var(--text3); font-style: italic; font-size: 0.72rem; }
+  .opt-btn.missing.selected { background: var(--text3); color: white; }
+
+  /* Conditional subquestion */
+  .subquestion {
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+    border-top: 1px dashed var(--border);
+  }
+  .subquestion-label {
+    font-size: 0.75rem;
+    color: var(--text3);
+    margin-bottom: 0.5rem;
+    font-style: italic;
+  }
+
+  /* ── Patient Info ── */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .field-group label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text2);
+    margin-bottom: 0.3rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .field-group input, .field-group select {
+    width: 100%;
+    padding: 0.5rem 0.7rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color 0.15s;
+  }
+  .field-group input:focus, .field-group select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  /* ── Nav Buttons ── */
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .btn {
+    padding: 0.55rem 1.4rem;
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #244d7a; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--text3); }
+  .btn-success { background: var(--green); color: white; }
+  .btn-success:hover { background: #245838; }
+
+  /* ── Results Panel ── */
+  .results-panel {
+    background: var(--text);
+    padding: 1.5rem;
+    position: sticky;
+    top: 56px;
+    height: calc(100vh - 56px);
+    overflow-y: auto;
+    color: #d0cbc5;
+  }
+  .results-title {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1rem;
+    font-weight: 400;
+    color: white;
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.02em;
+  }
+
+  .scale-result {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius);
+    padding: 0.9rem 1rem;
+    margin-bottom: 0.7rem;
+  }
+  .scale-result-name {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #7a7570;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+  .scale-result-scores {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+  .score-box { text-align: center; }
+  .score-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: white;
+    line-height: 1;
+  }
+  .score-val.pending { color: #5a5550; font-size: 0.9rem; }
+  .score-label {
+    font-size: 0.65rem;
+    color: #6a6560;
+    margin-top: 0.2rem;
+    letter-spacing: 0.05em;
+  }
+  .score-bar-bg {
+    height: 3px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    margin-top: 0.6rem;
+    overflow: hidden;
+  }
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    background: var(--accent);
+  }
+
+  .scale-items-count {
+    font-size: 0.68rem;
+    color: #5a5550;
+    margin-top: 0.5rem;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .global-box {
+    background: rgba(45, 90, 142, 0.2);
+    border: 1px solid rgba(45, 90, 142, 0.3);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-top: 1rem;
+    text-align: center;
+  }
+  .global-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #7a8fa8;
+    margin-bottom: 0.4rem;
+  }
+  .global-val {
+    font-family: 'Crimson Pro', serif;
+    font-size: 2rem;
+    color: white;
+    font-weight: 300;
+  }
+  .global-sub {
+    font-size: 0.7rem;
+    color: #7a8fa8;
+    margin-top: 0.2rem;
+  }
+
+  .interpretation-bar {
+    margin-top: 0.8rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    text-align: center;
+    font-weight: 500;
+  }
+  .interp-low { background: rgba(138,45,45,0.2); color: #e88a8a; border: 1px solid rgba(138,45,45,0.3); }
+  .interp-mid { background: rgba(138,96,32,0.2); color: #e8b860; border: 1px solid rgba(138,96,32,0.3); }
+  .interp-norm { background: rgba(45,107,69,0.2); color: #6ae8a0; border: 1px solid rgba(45,107,69,0.3); }
+
+  .results-note {
+    font-size: 0.7rem;
+    color: #5a5550;
+    margin-top: 1rem;
+    line-height: 1.5;
+    padding-top: 0.8rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* ── Results Page ── */
+  .results-page { padding: 2rem 2.5rem; max-width: 800px; }
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem;
+    box-shadow: var(--shadow);
+  }
+  .result-card-name {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    margin-bottom: 0.8rem;
+    font-weight: 500;
+  }
+  .result-card-std {
+    font-family: 'Crimson Pro', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    line-height: 1;
+    margin-bottom: 0.2rem;
+  }
+  .result-card-norm {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--text2);
+  }
+  .result-card-bar-bg {
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    margin-top: 0.8rem;
+    overflow: hidden;
+  }
+  .result-card-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+  }
+  .result-card-items {
+    font-size: 0.72rem;
+    color: var(--text3);
+    margin-top: 0.6rem;
+  }
+  .missing-tag {
+    display: inline-block;
+    background: var(--amber-light);
+    border: 1px solid #d4b06a;
+    color: var(--amber);
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.68rem;
+    margin-left: 0.4rem;
+  }
+  .result-missing {
+    background: var(--surface2);
+    border: 2px dashed var(--border);
+    color: var(--text3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-style: italic;
+    min-height: 100px;
+  }
+
+  .global-result {
+    background: var(--text);
+    color: white;
+    border-radius: var(--radius);
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 16px rgba(26,24,20,0.15);
+  }
+  .global-result-label {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.2rem;
+    font-style: italic;
+    color: #b0aba5;
+  }
+  .global-result-val {
+    font-family: 'Crimson Pro', serif;
+    font-size: 3.5rem;
+    font-weight: 300;
+    color: white;
+    line-height: 1;
+  }
+  .global-result-sub { font-size: 0.75rem; color: #6a6560; margin-top: 0.3rem; }
+
+  .print-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem;
+    margin-top: 1rem;
+  }
+  .print-section h3 {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1rem;
+    font-weight: 400;
+    margin-bottom: 0.8rem;
+    color: var(--text2);
+  }
+  .print-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .print-table th {
+    text-align: left;
+    padding: 0.5rem 0.8rem;
+    background: var(--surface2);
+    font-weight: 500;
+    color: var(--text2);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .print-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--surface2); }
+  .print-table tr:last-child td { border-bottom: none; }
+  .num-cell { font-family: 'DM Mono', monospace; text-align: right; }
+
+  /* Intro page */
+  .intro-page { padding: 3rem 2.5rem; max-width: 700px; }
+  .intro-logo {
+    font-family: 'Crimson Pro', serif;
+    font-size: 3.5rem;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+  .intro-logo span { color: var(--accent); }
+  .intro-sub {
+    font-size: 0.9rem;
+    color: var(--text2);
+    margin-bottom: 2rem;
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+  }
+  .intro-desc {
+    font-size: 0.88rem;
+    color: var(--text2);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+    max-width: 580px;
+  }
+  .scales-overview {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+  }
+  .scale-overview-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.9rem 1rem;
+  }
+  .scale-ov-name { font-weight: 500; font-size: 0.82rem; margin-bottom: 0.2rem; }
+  .scale-ov-detail { font-size: 0.73rem; color: var(--text3); }
+
+  .hidden { display: none; }
+
+  @media print {
+    header, .sidebar, .results-panel, .nav-row { display: none; }
+    .layout { display: block; }
+    .main, .results-page { padding: 0; max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-title">
+    PODCI
+    <span>Instrumento de Recolección de Datos de Resultados Pediátricos</span>
+  </div>
+  <div class="header-actions">
+    <button class="btn-header" onclick="goTo('intro')">≡ Dominios</button>
+    <button class="btn-header" onclick="goTo('results')" style="background:rgba(45,107,69,0.3);border-color:rgba(106,191,138,0.3)">✓ Resultados</button>
+    <button class="btn-header" onclick="resetAll()">↺ Nueva evaluación</button>
+    <button class="btn-header" onclick="window.print()">⎙ Imprimir</button>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-section">Navegación</div>
+    <a class="sidebar-item active" id="nav-intro" onclick="goTo('intro')">
+      <div class="sidebar-dot" style="background:#5a5550"></div>
+      Inicio
+    </a>
+    <a class="sidebar-item" id="nav-paciente" onclick="goTo('paciente')">
+      <div class="sidebar-dot" style="background:#5a5550"></div>
+      Datos del Paciente
+    </a>
+
+    <div class="sidebar-section">Escalas</div>
+    <a class="sidebar-item" id="nav-s1" onclick="goTo('s1')">
+      <div class="sidebar-dot" style="background:var(--scale1)"></div>
+      Extremidad Superior
+      <span class="sidebar-progress" id="prog-s1">0/8</span>
+    </a>
+    <a class="sidebar-item" id="nav-s2" onclick="goTo('s2')">
+      <div class="sidebar-dot" style="background:var(--scale2)"></div>
+      Transferencias y Movilidad
+      <span class="sidebar-progress" id="prog-s2">0/8</span>
+    </a>
+    <a class="sidebar-item" id="nav-s3" onclick="goTo('s3')">
+      <div class="sidebar-dot" style="background:var(--scale3)"></div>
+      Deportes y Función Física
+      <span class="sidebar-progress" id="prog-s3">0/12</span>
+    </a>
+    <a class="sidebar-item" id="nav-s4" onclick="goTo('s4')">
+      <div class="sidebar-dot" style="background:var(--scale4)"></div>
+      Dolor y Comodidad
+      <span class="sidebar-progress" id="prog-s4">0/3</span>
+    </a>
+    <a class="sidebar-item" id="nav-s5" onclick="goTo('s5')">
+      <div class="sidebar-dot" style="background:var(--scale5)"></div>
+      Bienestar / Felicidad
+      <span class="sidebar-progress" id="prog-s5">0/5</span>
+    </a>
+
+    <div class="sidebar-section">Resultados</div>
+    <a class="sidebar-item" id="nav-results" onclick="goTo('results')">
+      <div class="sidebar-dot" style="background:#4a8a64"></div>
+      Ver Resultados
+    </a>
+  </nav>
+
+  <!-- Main area -->
+  <main class="main" id="main-content">
+    <!-- Pages rendered by JS -->
+  </main>
+
+  <!-- Live Results Panel -->
+  <aside class="results-panel">
+    <div class="results-title">Puntuación en tiempo real</div>
+
+    <div id="live-s1" class="scale-result">
+      <div class="scale-result-name" style="color:#7a8fa8">Extremidad Superior</div>
+      <div class="scale-result-scores">
+        <div class="score-box">
+          <div class="score-val pending" id="live-s1-std">—</div>
+          <div class="score-label">Estandarizada</div>
+        </div>
+        <div class="score-box">
+          <div class="score-val pending" id="live-s1-norm">—</div>
+          <div class="score-label">Normativa</div>
+        </div>
+      </div>
+      <div class="score-bar-bg"><div class="score-bar-fill" id="live-s1-bar" style="width:0%;background:#5a8abf"></div></div>
+      <div class="scale-items-count" id="live-s1-items">0 / 11 ítems</div>
+      <div id="live-s1-interp"></div>
+    </div>
+
+    <div id="live-s2" class="scale-result">
+      <div class="scale-result-name" style="color:#a88068">Transferencias y Movilidad</div>
+      <div class="scale-result-scores">
+        <div class="score-box">
+          <div class="score-val pending" id="live-s2-std">—</div>
+          <div class="score-label">Estandarizada</div>
+        </div>
+        <div class="score-box">
+          <div class="score-val pending" id="live-s2-norm">—</div>
+          <div class="score-label">Normativa</div>
+        </div>
+      </div>
+      <div class="score-bar-bg"><div class="score-bar-fill" id="live-s2-bar" style="width:0%;background:#bf8a6a"></div></div>
+      <div class="scale-items-count" id="live-s2-items">0 / 8 ítems</div>
+      <div id="live-s2-interp"></div>
+    </div>
+
+    <div id="live-s3" class="scale-result">
+      <div class="scale-result-name" style="color:#68a880">Deportes y Función Física</div>
+      <div class="scale-result-scores">
+        <div class="score-box">
+          <div class="score-val pending" id="live-s3-std">—</div>
+          <div class="score-label">Estandarizada</div>
+        </div>
+        <div class="score-box">
+          <div class="score-val pending" id="live-s3-norm">—</div>
+          <div class="score-label">Normativa</div>
+        </div>
+      </div>
+      <div class="score-bar-bg"><div class="score-bar-fill" id="live-s3-bar" style="width:0%;background:#6abf8a"></div></div>
+      <div class="scale-items-count" id="live-s3-items">0 / 12 ítems</div>
+      <div id="live-s3-interp"></div>
+    </div>
+
+    <div id="live-s4" class="scale-result">
+      <div class="scale-result-name" style="color:#8a6aa8">Dolor y Comodidad</div>
+      <div class="scale-result-scores">
+        <div class="score-box">
+          <div class="score-val pending" id="live-s4-std">—</div>
+          <div class="score-label">Estandarizada</div>
+        </div>
+        <div class="score-box">
+          <div class="score-val pending" id="live-s4-norm">—</div>
+          <div class="score-label">Normativa</div>
+        </div>
+      </div>
+      <div class="score-bar-bg"><div class="score-bar-fill" id="live-s4-bar" style="width:0%;background:#8a6abf"></div></div>
+      <div class="scale-items-count" id="live-s4-items">0 / 3 ítems</div>
+      <div id="live-s4-interp"></div>
+    </div>
+
+    <div id="live-s5" class="scale-result">
+      <div class="scale-result-name" style="color:#a8a068">Bienestar / Felicidad</div>
+      <div class="scale-result-scores">
+        <div class="score-box">
+          <div class="score-val pending" id="live-s5-std">—</div>
+          <div class="score-label">Estandarizada</div>
+        </div>
+        <div class="score-box">
+          <div class="score-val pending" id="live-s5-norm">—</div>
+          <div class="score-label">Normativa</div>
+        </div>
+      </div>
+      <div class="score-bar-bg"><div class="score-bar-fill" id="live-s5-bar" style="width:0%;background:#bfb86a"></div></div>
+      <div class="scale-items-count" id="live-s5-items">0 / 5 ítems</div>
+      <div id="live-s5-interp"></div>
+    </div>
+
+    <div class="global-box" id="live-global">
+      <div class="global-label">Función Global</div>
+      <div class="global-val" id="live-global-val">—</div>
+      <div class="global-sub" id="live-global-sub">Requiere las 4 escalas principales</div>
+    </div>
+
+    <div class="results-note">
+      <strong style="color:#8a8580">Referencia normativa:</strong> Puntuación de 50 = media de población sana. Puntuaciones más altas = mejor función. Rango típico: 0–100+.
+    </div>
+  </aside>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA MODEL
+// ─────────────────────────────────────────────
+
+// responses: key = "Q1" through "Q76", value = number or null
+const R = {};
+
+// Patient info
+const patient = { nombre:'', hc:'', edad:'', sexo:'', fecha:'' };
+
+// Normative constants (from Excel)
+const NORMS = {
+  s1: { mean: 98.354, sd: 5.68 },
+  s2: { mean: 91.975, sd: 11.49 },
+  s3: { mean: 93.864, sd: 7.39 },
+  s4: { mean: 92.435, sd: 13.75 },
+  s5: { mean: 89.805, sd: 14.10 },
+};
+
+// ─────────────────────────────────────────────
+// QUESTION DEFINITIONS
+// ─────────────────────────────────────────────
+
+// Scale 1: Upper Extremity (Q7, Q21, Q24, Q25, Q28-Q35)
+// But Q34, Q35 are rescaled from 1-5 → 1-4
+// Scale 2: Transfer/Mobility (Q1, Q2, Q3, Q5, Q6, Q8, Q32)  + Q17rescaled
+// Scale 3: Sports (Q36-Q59 area - 12 main items)
+// Scale 4: Pain/Comfort (Q17, Q75, Q76) - with rescaling
+// Scale 5: Happiness (Q10, Q11, Q12, Q13, Q14)
+
+const OPTS_4 = [
+  {val:1, label:'Nunca'},
+  {val:2, label:'Casi nunca'},
+  {val:3, label:'Algunas veces'},
+  {val:4, label:'Siempre'},
+];
+const OPTS_4_FREQ = [
+  {val:1, label:'Sin dificultad'},
+  {val:2, label:'Con poca dificultad'},
+  {val:3, label:'Con dificultad'},
+  {val:4, label:'No puede'},
+];
+const OPTS_4_FREQ2 = [
+  {val:1, label:'Siempre'},
+  {val:2, label:'Casi siempre'},
+  {val:3, label:'A veces'},
+  {val:4, label:'Nunca'},
+];
+const OPTS_HELP_4 = [
+  {val:1, label:'Nunca necesita ayuda'},
+  {val:2, label:'Raramente necesita ayuda'},
+  {val:3, label:'A veces necesita ayuda'},
+  {val:4, label:'Siempre necesita ayuda'},
+];
+const OPTS_5_ACT = [
+  {val:1, label:'Sin dificultad'},
+  {val:2, label:'Con un poco de dificultad'},
+  {val:3, label:'Con dificultad'},
+  {val:4, label:'No puede hacerlo'},
+  {val:5, label:'Muy pequeño para esto'},
+];
+const OPTS_PAIN = [
+  {val:1, label:'Ninguno'},
+  {val:2, label:'Leve'},
+  {val:3, label:'Moderado'},
+  {val:4, label:'Intenso'},
+  {val:5, label:'Muy intenso'},
+];
+const OPTS_HAPPY = [
+  {val:1, label:'Muy feliz'},
+  {val:2, label:'Bastante feliz'},
+  {val:3, label:'Más o menos feliz'},
+  {val:4, label:'Bastante infeliz'},
+  {val:5, label:'Muy infeliz'},
+];
+const OPTS_6_SPORTS = [
+  {val:1, label:'Sin dificultad'},
+  {val:2, label:'Con poca dificultad'},
+  {val:3, label:'Con dificultad'},
+  {val:4, label:'No puede'},
+  {val:5, label:'No es temporada'},
+  {val:6, label:'Muy pequeño'},
+];
+const OPTS_YESNO = [
+  {val:1, label:'Sí'},
+  {val:2, label:'No'},
+];
+const OPTS_FREQ_WEEK = [
+  {val:1, label:'Todos los días'},
+  {val:2, label:'Varios días'},
+  {val:3, label:'Una vez'},
+  {val:4, label:'Ningún día'},
+];
+const OPTS_SPORTS3 = [
+  {val:1, label:'Sí, puede'},
+  {val:2, label:'No puede'},
+  {val:3, label:'No corresponde (muy pequeño)'},
+];
+const OPTS_ASSIST = [
+  {val:1, label:'Nunca usa'},
+  {val:2, label:'Raramente'},
+  {val:3, label:'A veces'},
+  {val:4, label:'Con frecuencia'},
+  {val:5, label:'Siempre'},
+];
+
+// ─────────────────────────────────────────────
+// SCORING ENGINE
+// ─────────────────────────────────────────────
+
+function rescale(val, fromMax, toMax) {
+  if (val === null || val === undefined) return null;
+  return (val - 1) * (toMax - 1) / (fromMax - 1) + 1;
+}
+
+function getVal(q) {
+  const v = R['Q'+q];
+  return (v === null || v === undefined || v === '') ? null : Number(v);
+}
+
+function computeScale1() {
+  // Items: Q7, Q21, Q24, Q25, Q28, Q29, Q30, Q31, Q33, Q34rescaled, Q35rescaled
+  // Q34, Q35 original 1-5, rescaled to 1-4: [(val-1)*3/4]+1
+  // "5" (too young) = missing
+  const raw = {};
+  [7,21,24,25,28,29,30,31,33].forEach(q => {
+    let v = getVal(q);
+    if (v === 5) v = null; // too young = missing
+    raw['Q'+q] = v;
+  });
+  // Q34 rescaled
+  let q34 = getVal(34);
+  if (q34 === 5) q34 = null;
+  raw.Q34r = q34 !== null ? (q34-1)*3/4+1 : null;
+  // Q35 rescaled
+  let q35 = getVal(35);
+  if (q35 === 5) q35 = null;
+  raw.Q35r = q35 !== null ? (q35-1)*3/4+1 : null;
+
+  const items = [raw.Q7, raw.Q21, raw.Q24, raw.Q25, raw.Q28, raw.Q29, raw.Q30, raw.Q31, raw.Q33, raw.Q34r, raw.Q35r];
+  const valid = items.filter(v => v !== null);
+  const nValid = valid.length;
+  const nRequired = 6;
+
+  if (nValid < nRequired) return { std: null, norm: null, nValid, nRequired, nTotal: 11 };
+
+  const mean = valid.reduce((a,b) => a+b, 0) / nValid;
+  const std = ((4 - mean) / 3) * 100;
+  const norm = 50 + 10 * (std - NORMS.s1.mean) / NORMS.s1.sd;
+  return { std: Math.round(std), norm: Math.round(norm), nValid, nRequired, nTotal: 11 };
+}
+
+function computeScale2() {
+  // Items: Q1, Q2, Q3, Q5, Q6, Q8, Q32
+  // Plus Q17rescaled (pain item, reversed): Q17 original 1-5, rescaled: [(4-Q17)*4/3]+1 → range 1-5
+  // "5" (too young) = missing on Q5, Q6, Q8, Q32
+  const items = [];
+  [1,2,3].forEach(q => {
+    items.push(getVal(q));
+  });
+  [5,6,8,32].forEach(q => {
+    let v = getVal(q);
+    if (v === 5) v = null;
+    items.push(v);
+  });
+
+  const valid = items.filter(v => v !== null);
+  const nValid = valid.length;
+  const nRequired = 4;
+
+  if (nValid < nRequired) return { std: null, norm: null, nValid, nRequired, nTotal: 8 };
+
+  const mean = valid.reduce((a,b) => a+b, 0) / nValid;
+  const std = ((4 - mean) / 3) * 100;
+  const norm = 50 + 10 * (std - NORMS.s2.mean) / NORMS.s2.sd;
+  return { std: Math.round(std), norm: Math.round(norm), nValid, nRequired, nTotal: 8 };
+}
+
+function computeScale3() {
+  // Main items: Q18, Q19, Q20, Q21 (already in s1), Q22, Q23, Q36, Q44, Q52
+  // Plus sports participation: Q36 recoded if Q42=1 or Q43=1; Q44 if Q50=1 or Q51=1; Q52 if Q58=1 or Q59=1
+  // Using simplified core 12 items per Excel labels:
+  // Q18, Q19, Q20, Q22, Q23, Q36, Q44, Q52, Q9(walk block?), Q16(rec outdoor), Q26rescaled, Q27rescaled
+  // From Excel: items are Q18-Q25 (some), Q26, Q27 rescaled, Q28-Q33, Q36, Q44, Q52
+  // Let's use the cleaner set identifiable from the Excel notes:
+  // Core sports items with "5=too young" as missing:
+
+  let items = [];
+  // Q18, Q19, Q20: help needed items (1-5, 5=too young)
+  [18,19,20].forEach(q => {
+    let v = getVal(q);
+    if (v === 5) v = null;
+    items.push(v);
+  });
+  // Q22, Q23 (1-5, 5=too young)
+  [22,23].forEach(q => {
+    let v = getVal(q);
+    if (v === 5) v = null;
+    items.push(v);
+  });
+  // Q26, Q27: 1-5 rescaled to 1-4: [(val-1)*3/4]+1
+  [26,27].forEach(q => {
+    let v = getVal(q);
+    if (v === 5) v = null;
+    if (v !== null) v = (v-1)*3/4+1;
+    items.push(v);
+  });
+  // Q36: participation in recreational activities (1-4), recode if Q42=1 or Q43=1 → missing
+  let q36 = getVal(36);
+  if (q36 === 4 && (getVal(42)===1 || getVal(43)===1)) q36 = null;
+  items.push(q36);
+  // Q44: recode if Q50=1 or Q51=1 → missing
+  let q44 = getVal(44);
+  if (q44 === 4 && (getVal(50)===1 || getVal(51)===1)) q44 = null;
+  items.push(q44);
+  // Q52: recode if Q58=1 or Q59=1 → missing
+  let q52 = getVal(52);
+  if (q52 === 4 && (getVal(58)===1 || getVal(59)===1)) q52 = null;
+  items.push(q52);
+  // Q9 (walk 3 blocks, 1-4, 4=too young by context—leave as is if null)
+  items.push(getVal(9));
+  // Q16 (get on bus, 1-4)
+  items.push(getVal(16));
+
+  const valid = items.filter(v => v !== null);
+  const nValid = valid.length;
+  const nRequired = 7;
+
+  if (nValid < nRequired) return { std: null, norm: null, nValid, nRequired, nTotal: 12 };
+
+  const mean = valid.reduce((a,b) => a+b, 0) / nValid;
+  const std = ((4 - mean) / 3) * 100;
+  const norm = 50 + 10 * (std - NORMS.s3.mean) / NORMS.s3.sd;
+  return { std: Math.round(std), norm: Math.round(norm), nValid, nRequired, nTotal: 12 };
+}
+
+function computeScale4() {
+  // Items: Q17 (direct), Q75rescaled, Q76
+  //
+  // Q17: 1–4 scale (1=nunca necesita ayuda = sin carga = MEJOR)
+  //   → se usa DIRECTAMENTE (no con el rescalado de Transferencias que lo invertiría)
+  //   → rango efectivo 1–4; se extiende a 1–5 promediando con los otros ítems
+  //
+  // Q75: 1–6 → rescalado a 1–5: [(Q75-1)*4/5]+1
+  //   → 6 = "No aplica" se trata como faltante
+  //
+  // Q76: 1–5 directo (1=ningún dolor = MEJOR)
+  //
+  // Dirección unificada: 1=mejor, 5=peor (más dolor)
+  // Fórmula estandarizada: std = (5 - media) / 4 × 100
+  //   → rango publicado: mínimo −17.22, máximo 55.51 (verificado)
+
+  let q17 = getVal(17);
+  // Q17 rango 1-4, usado directo para escala de dolor
+  const q17_pain = q17; // null si no respondido
+
+  let q75 = getVal(75);
+  if (q75 === 6) q75 = null; // "No aplica" = faltante
+  let q75r = q75 !== null ? (q75 - 1) * 4/5 + 1 : null; // → rango 1–5
+
+  let q76 = getVal(76); // 1–5 directo
+
+  const items = [q17_pain, q75r, q76];
+  const valid = items.filter(v => v !== null);
+  const nValid = valid.length;
+  const nRequired = 2;
+
+  if (nValid < nRequired) return { std: null, norm: null, nValid, nRequired, nTotal: 3 };
+
+  const mean = valid.reduce((a, b) => a + b, 0) / nValid;
+  // Fórmula correcta para rango 1–5, dirección: 1=mejor → std=100, 5=peor → std=0
+  const std = (5 - mean) / 4 * 100;
+  const norm = 50 + 10 * (std - NORMS.s4.mean) / NORMS.s4.sd;
+  return { std: Math.round(std), norm: Math.round(norm), nValid, nRequired, nTotal: 3 };
+}
+
+function computeScale5() {
+  // Items: Q10, Q11, Q12, Q13, Q14 (1-5 happiness scale, lower=happier)
+  // "6" = missing code
+  const items = [];
+  [10,11,12,13,14].forEach(q => {
+    let v = getVal(q);
+    if (v === 6) v = null;
+    items.push(v);
+  });
+  const valid = items.filter(v => v !== null);
+  const nValid = valid.length;
+  const nRequired = 3;
+
+  if (nValid < nRequired) return { std: null, norm: null, nValid, nRequired, nTotal: 5 };
+
+  const mean = valid.reduce((a,b) => a+b, 0) / nValid;
+  // Happiness: standardized = [5 - mean/4]*100
+  const std = (5 - mean / 4) * 100;
+  const norm = 50 + 10 * (std - NORMS.s5.mean) / NORMS.s5.sd;
+  return { std: Math.round(std), norm: Math.round(norm), nValid, nRequired, nTotal: 5 };
+}
+
+function computeAll() {
+  return {
+    s1: computeScale1(),
+    s2: computeScale2(),
+    s3: computeScale3(),
+    s4: computeScale4(),
+    s5: computeScale5(),
+  };
+}
+
+function computeGlobal(scores) {
+  const mains = [scores.s1, scores.s2, scores.s3, scores.s4];
+  const valid = mains.filter(s => s.std !== null);
+  if (valid.length < 4) return null;
+  const meanStd = valid.reduce((a,b) => a + b.std, 0) / valid.length;
+  // Global norm uses pooled: just average normalized scores (simplified)
+  const normGlobal = valid.reduce((a,b) => a + b.norm, 0) / valid.length;
+  return { std: Math.round(meanStd), norm: Math.round(normGlobal) };
+}
+
+// ─────────────────────────────────────────────
+// UI UPDATE
+// ─────────────────────────────────────────────
+
+function liveInterpLabel(norm) {
+  if (norm === null) return '';
+  if (norm < 20)  return '<div style="margin-top:0.4rem;font-size:0.68rem;padding:0.15rem 0.5rem;border-radius:3px;background:rgba(138,45,45,0.25);color:#e88a8a;display:inline-block">Compromiso severo</div>';
+  if (norm < 35)  return '<div style="margin-top:0.4rem;font-size:0.68rem;padding:0.15rem 0.5rem;border-radius:3px;background:rgba(138,64,32,0.25);color:#e8a870;display:inline-block">Compromiso moderado-severo</div>';
+  if (norm < 45)  return '<div style="margin-top:0.4rem;font-size:0.68rem;padding:0.15rem 0.5rem;border-radius:3px;background:rgba(138,96,32,0.25);color:#e8c870;display:inline-block">Por debajo de la norma</div>';
+  if (norm <= 55) return '<div style="margin-top:0.4rem;font-size:0.68rem;padding:0.15rem 0.5rem;border-radius:3px;background:rgba(45,107,69,0.25);color:#6ae8a0;display:inline-block">Dentro de la norma</div>';
+  return               '<div style="margin-top:0.4rem;font-size:0.68rem;padding:0.15rem 0.5rem;border-radius:3px;background:rgba(45,90,142,0.25);color:#8abfe8;display:inline-block">Por encima de la norma</div>';
+}
+
+function updateLive() {
+  const s = computeAll();
+  const keys = ['s1','s2','s3','s4','s5'];
+  keys.forEach(k => {
+    const sc = s[k];
+    const stdEl = document.getElementById('live-'+k+'-std');
+    const normEl = document.getElementById('live-'+k+'-norm');
+    const barEl = document.getElementById('live-'+k+'-bar');
+    const itemsEl = document.getElementById('live-'+k+'-items');
+    const interpEl = document.getElementById('live-'+k+'-interp');
+    if (sc.std !== null) {
+      stdEl.textContent = sc.std;
+      stdEl.className = 'score-val';
+      normEl.textContent = sc.norm;
+      normEl.className = 'score-val';
+      barEl.style.width = Math.max(0, Math.min(100, sc.std)) + '%';
+      if (interpEl) interpEl.innerHTML = liveInterpLabel(sc.norm);
+    } else {
+      stdEl.textContent = '—';
+      stdEl.className = 'score-val pending';
+      normEl.textContent = '—';
+      normEl.className = 'score-val pending';
+      barEl.style.width = '0%';
+      if (interpEl) interpEl.innerHTML = '';
+    }
+    itemsEl.textContent = sc.nValid + ' / ' + sc.nTotal + ' ítems' + (sc.nValid < sc.nRequired ? ' (mín. '+sc.nRequired+')' : '');
+  });
+
+  // Progress indicators
+  updateProgress();
+
+  // Global
+  const g = computeGlobal(s);
+  const gv = document.getElementById('live-global-val');
+  const gs = document.getElementById('live-global-sub');
+  if (g) {
+    gv.textContent = g.norm;
+    gs.textContent = 'Puntuación normativa global';
+  } else {
+    gv.textContent = '—';
+    gs.textContent = 'Requiere las 4 escalas principales';
+  }
+}
+
+function updateProgress() {
+  // Count answered per section
+  const s1items = [7,21,24,25,28,29,30,31,33,34,35];
+  const s2items = [1,2,3,5,6,8,32,17];
+  const s3items = [18,19,20,22,23,26,27,36,44,52,9,16];
+  const s4items = [17,75,76];
+  const s5items = [10,11,12,13,14];
+
+  [
+    ['s1',s1items,11],
+    ['s2',s2items,8],
+    ['s3',s3items,12],
+    ['s4',s4items,3],
+    ['s5',s5items,5]
+  ].forEach(([k,items,total]) => {
+    const answered = items.filter(q => getVal(q) !== null).length;
+    const el = document.getElementById('prog-'+k);
+    if (el) {
+      el.textContent = answered+'/'+total;
+      el.className = answered === total ? 'sidebar-progress done' : 'sidebar-progress';
+    }
+  });
+}
+
+// ─────────────────────────────────────────────
+// PAGE RENDERING
+// ─────────────────────────────────────────────
+
+let currentPage = 'intro';
+
+function goTo(page) {
+  currentPage = page;
+  document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+  const navEl = document.getElementById('nav-'+page);
+  if (navEl) navEl.classList.add('active');
+  renderPage(page);
+  window.scrollTo(0,0);
+}
+
+function renderPage(page) {
+  const main = document.getElementById('main-content');
+  if (page === 'intro') main.innerHTML = renderIntro();
+  else if (page === 'paciente') main.innerHTML = renderPaciente();
+  else if (page === 's1') main.innerHTML = renderScale1();
+  else if (page === 's2') main.innerHTML = renderScale2();
+  else if (page === 's3') main.innerHTML = renderScale3();
+  else if (page === 's4') main.innerHTML = renderScale4();
+  else if (page === 's5') main.innerHTML = renderScale5();
+  else if (page === 'results') main.innerHTML = renderResults();
+  bindEvents(page);
+}
+
+function renderIntro() {
+  // Show live progress on intro buttons
+  const s1items = [7,21,24,25,28,29,30,31,33,34,35];
+  const s2items = [1,2,3,5,6,8,32,17];
+  const s3items = [18,19,20,22,23,26,27,36,44,52,9,16];
+  const s4items = [17,75,76];
+  const s5items = [10,11,12,13,14];
+  function prog(items, total) {
+    const n = items.filter(q => getVal(q) !== null).length;
+    if (n === 0) return '<span style="color:#5a5550">sin respuestas</span>';
+    if (n >= total) return '<span style="color:#4a8a64">✓ completo</span>';
+    return '<span style="color:#8a8060">' + n + '/' + total + ' ítems</span>';
+  }
+  const scaleBtn = (page, color, name, detail, itemsArr, total) => `
+    <button onclick="goTo('${page}')" style="display:flex;align-items:center;gap:1rem;padding:0.85rem 1.1rem;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);cursor:pointer;text-align:left;width:100%;font-family:'DM Sans',sans-serif;transition:border-color 0.15s" onmouseover="this.style.borderColor='${color}'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0"></div>
+      <div style="flex:1">
+        <div style="font-size:0.85rem;font-weight:500;color:${color}">${name}</div>
+        <div style="font-size:0.71rem;color:var(--text3);margin-top:0.1rem">${detail}</div>
+      </div>
+      <div style="font-size:0.72rem;font-family:'DM Mono',monospace">${prog(itemsArr, total)}</div>
+    </button>`;
+
+  return `
+  <div class="intro-page">
+    <div class="intro-logo">PODCI<span>.</span></div>
+    <div class="intro-sub">Instrumento de Recolección de Datos de Resultados Pediátricos</div>
+    <div class="intro-desc">
+      Cada dominio se puede completar y calcular de forma <strong>independiente</strong>. No es necesario responder todos los ítems ni seguir un orden determinado — seleccione directamente el dominio de interés.
+    </div>
+    <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);margin-bottom:0.7rem;font-weight:500">Dominios — acceso directo</div>
+    <div style="display:flex;flex-direction:column;gap:0.45rem;margin-bottom:1.5rem">
+      ${scaleBtn('s1', 'var(--scale1)', 'Extremidad Superior y Función Física', '11 ítems · mín. 6 para calcular', s1items, 11)}
+      ${scaleBtn('s2', 'var(--scale2)', 'Transferencias y Movilidad Básica', '8 ítems · mín. 4 para calcular', s2items, 8)}
+      ${scaleBtn('s3', 'var(--scale3)', 'Deportes y Función Física', '12 ítems · mín. 7 para calcular', s3items, 12)}
+      ${scaleBtn('s4', 'var(--scale4)', 'Dolor y Comodidad', '3 ítems · mín. 2 para calcular', s4items, 3)}
+      ${scaleBtn('s5', 'var(--scale5)', 'Bienestar / Felicidad', '5 ítems · mín. 3 para calcular', s5items, 5)}
+    </div>
+    <div style="display:flex;gap:0.8rem;flex-wrap:wrap">
+      <button class="btn btn-success" onclick="goTo('results')">Ver resultados →</button>
+      <button class="btn btn-secondary" onclick="goTo('paciente')">Datos del paciente</button>
+    </div>
+    <div style="margin-top:1.2rem;font-size:0.71rem;color:var(--text3);line-height:1.6;max-width:500px">
+      Las puntuaciones se actualizan en tiempo real en el panel derecho a medida que ingresa respuestas. La puntuación global requiere los 4 dominios principales.
+    </div>
+  </div>`;
+}
+
+function renderPaciente() {
+  return `
+  <div class="main" style="padding:0">
+    <div class="section-header">
+      <div class="section-badge" style="background:var(--surface2);color:var(--text2)">P</div>
+      <div>
+        <div class="section-title">Datos del Paciente</div>
+        <div class="section-subtitle">Información de identificación para el reporte</div>
+      </div>
+    </div>
+    <div class="info-grid">
+      <div class="field-group" style="grid-column:1/-1">
+        <label>Nombre del paciente</label>
+        <input type="text" id="f-nombre" value="${patient.nombre}" placeholder="Apellidos, Nombre">
+      </div>
+      <div class="field-group">
+        <label>Historia Clínica / ID</label>
+        <input type="text" id="f-hc" value="${patient.hc}" placeholder="Nº de historia">
+      </div>
+      <div class="field-group">
+        <label>Fecha de evaluación</label>
+        <input type="date" id="f-fecha" value="${patient.fecha}">
+      </div>
+      <div class="field-group">
+        <label>Edad (años)</label>
+        <input type="number" id="f-edad" value="${patient.edad}" min="2" max="18" placeholder="Años">
+      </div>
+      <div class="field-group">
+        <label>Sexo</label>
+        <select id="f-sexo">
+          <option value="" ${!patient.sexo?'selected':''}>Seleccionar</option>
+          <option value="M" ${patient.sexo==='M'?'selected':''}>Masculino</option>
+          <option value="F" ${patient.sexo==='F'?'selected':''}>Femenino</option>
+        </select>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goTo('intro')">← Inicio</button>
+      <button class="btn btn-primary" onclick="savePaciente();goTo('s1')">Continuar →</button>
+    </div>
+  </div>`;
+}
+
+function savePaciente() {
+  patient.nombre = document.getElementById('f-nombre')?.value || '';
+  patient.hc = document.getElementById('f-hc')?.value || '';
+  patient.fecha = document.getElementById('f-fecha')?.value || '';
+  patient.edad = document.getElementById('f-edad')?.value || '';
+  patient.sexo = document.getElementById('f-sexo')?.value || '';
+}
+
+function renderQCard(qNum, text, opts, tag, note) {
+  const val = getVal(qNum);
+  const answered = val !== null;
+  const tagsHtml = tag ? `<span class="question-tag">${tag}</span>` : '';
+  const noteHtml = note ? `<div style="font-size:0.75rem;color:var(--text3);margin-bottom:0.6rem;font-style:italic">${note}</div>` : '';
+  const optsHtml = opts.map(o => {
+    const sel = val === o.val ? 'selected' : '';
+    const missCls = (o.val === 5 || o.val === 6) ? 'missing' : '';
+    return `<button class="opt-btn ${sel} ${missCls}" onclick="setQ(${qNum},${o.val})">${o.label}</button>`;
+  }).join('');
+  return `
+  <div class="question-card ${answered?'answered':''}" id="qcard-${qNum}">
+    <div class="question-num">P${qNum} ${tagsHtml}</div>
+    ${noteHtml}
+    <div class="question-text">${text}</div>
+    <div class="options-row">${optsHtml}</div>
+  </div>`;
+}
+
+function renderScale1() {
+  const color = 'var(--scale1)';
+  return `
+  <div>
+    <div class="section-header">
+      <div class="section-badge" style="background:var(--accent-light);color:var(--accent)">ES</div>
+      <div>
+        <div class="section-title" style="color:var(--scale1)">Extremidad Superior y Función Física</div>
+        <div class="section-subtitle">11 ítems · Mínimo 6 para calcular la puntuación</div>
+      </div>
+    </div>
+    <div class="section-note">
+      <strong>Escala de respuesta:</strong> 1 = Sin dificultad · 4 = No puede hacerlo · 5 = Muy pequeño para esta actividad (se trata como dato faltante)
+    </div>
+
+    ${renderQCard(7, '¿Puede su hijo(a) cargar libros pesados?', OPTS_5_ACT, 'ES')}
+    ${renderQCard(21, '¿Puede su hijo(a) usar tenedor y cuchara?', OPTS_5_ACT, 'ES')}
+    ${renderQCard(24, '¿Puede su hijo(a) peinarse?', OPTS_5_ACT, 'ES')}
+    ${renderQCard(25, '¿Puede su hijo(a) abrochar botones?', OPTS_5_ACT, 'ES')}
+    ${renderQCard(28, '¿Puede su hijo(a) escribir con un lápiz?', OPTS_5_ACT, 'ES')}
+    ${renderQCard(29, '¿Puede su hijo(a) girar perillas de puertas?', OPTS_5_ACT, 'ES')}
+    ${renderQCard(30, '¿Puede su hijo(a) ponerse el abrigo/chaqueta?', OPTS_5_ACT, 'ES')}
+    ${renderQCard(31, '¿Puede su hijo(a) abrir un frasco que ya ha sido abierto antes?', OPTS_5_ACT, 'ES')}
+    ${renderQCard(33, '¿Puede su hijo(a) verter líquido de un recipiente (ej. servir un vaso)?', OPTS_5_ACT, 'ES')}
+
+    <div class="section-note amber" style="margin-top:1rem">
+      Los siguientes 2 ítems (P34 y P35) usan escala 1–5 y se reescalan internamente a 1–4 para el cálculo.
+    </div>
+    ${renderQCard(34, '¿Puede su hijo(a) subir una escalera de un piso?', OPTS_5_ACT, 'ES · reescalado')}
+    ${renderQCard(35, '¿Puede su hijo(a) caminar una cuadra?', OPTS_5_ACT, 'ES · reescalado')}
+
+    <div class="nav-row">
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn btn-secondary" onclick="goTo('intro')">← Inicio</button>
+        <button class="btn btn-secondary" onclick="goTo('s2')">Siguiente →</button>
+      </div>
+      <button class="btn btn-success" onclick="goTo('results')">Ver resultados</button>
+    </div>
+  </div>`;
+}
+
+function renderScale2() {
+  return `
+  <div>
+    <div class="section-header">
+      <div class="section-badge" style="background:var(--accent2-light);color:var(--accent2)">TM</div>
+      <div>
+        <div class="section-title" style="color:var(--scale2)">Transferencias y Movilidad Básica</div>
+        <div class="section-subtitle">8 ítems · Mínimo 4 para calcular la puntuación</div>
+      </div>
+    </div>
+    <div class="section-note">
+      <strong>Escala de respuesta:</strong> 1 = Sin dificultad · 4 = No puede hacerlo · 5 = Muy pequeño (dato faltante)
+    </div>
+
+    ${renderQCard(1, '¿Puede su hijo(a) subir y bajar de un autobús?', OPTS_5_ACT, 'TM')}
+    ${renderQCard(2, '¿Puede su hijo(a) estar de pie mientras se lava las manos y la cara en un lavamanos?', OPTS_5_ACT, 'TM')}
+    ${renderQCard(3, '¿Puede su hijo(a) sentarse en una silla regular sin apoyarse?', OPTS_5_ACT, 'TM')}
+    ${renderQCard(5, '¿Puede su hijo(a) subir y bajar de un sanitario o silla?', OPTS_5_ACT, 'TM')}
+    ${renderQCard(6, '¿Puede su hijo(a) entrar y salir de la cama?', OPTS_5_ACT, 'TM')}
+    ${renderQCard(8, '¿Puede su hijo(a) doblarse desde la posición de pie para recoger algo del suelo?', OPTS_5_ACT, 'TM')}
+    ${renderQCard(32, '¿Puede su hijo(a) subir tres pisos de escaleras?', OPTS_5_ACT, 'TM')}
+
+    <div class="section-note amber" style="margin-top:0.5rem">
+      P17 evalúa necesidad de ayuda para sentarse/pararse y es un ítem compartido con la Escala de Dolor (reescalado internamente).
+    </div>
+    ${renderQCard(17, '¿Con qué frecuencia su hijo(a) necesita ayuda de otra persona para sentarse y pararse?', OPTS_HELP_4, 'TM/Dolor · reescalado')}
+
+    <div class="nav-row">
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn btn-secondary" onclick="goTo('s1')">← Ant.</button>
+        <button class="btn btn-secondary" onclick="goTo('s3')">Siguiente →</button>
+      </div>
+      <button class="btn btn-success" onclick="goTo('results')">Ver resultados</button>
+    </div>
+  </div>`;
+}
+
+function renderScale3() {
+  return `
+  <div>
+    <div class="section-header">
+      <div class="section-badge" style="background:var(--green-light);color:var(--green)">DF</div>
+      <div>
+        <div class="section-title" style="color:var(--scale3)">Deportes y Función Física</div>
+        <div class="section-subtitle">12 ítems · Mínimo 7 para calcular la puntuación</div>
+      </div>
+    </div>
+    <div class="section-note">
+      Algunos ítems tienen condiciones de recodificación automática: si el niño "no puede" por estar fuera de temporada o ser muy pequeño, el ítem se trata como faltante.
+    </div>
+
+    ${renderQCard(18, '¿Puede su hijo(a) correr distancias cortas?', OPTS_5_ACT, 'DF')}
+    ${renderQCard(19, '¿Puede su hijo(a) montar bicicleta o triciclo?', OPTS_5_ACT, 'DF')}
+    ${renderQCard(20, '¿Puede su hijo(a) caminar más de una milla (aprox. 1.5 km)?', OPTS_5_ACT, 'DF')}
+    ${renderQCard(22, '¿Puede su hijo(a) caminar tres cuadras?', OPTS_5_ACT, 'DF')}
+    ${renderQCard(23, '¿Con qué frecuencia su hijo(a) necesita ayuda de otra persona para caminar?', OPTS_HELP_4, 'DF')}
+    ${renderQCard(9, '¿Con qué frecuencia puede caminar tres cuadras sin ayuda?', [
+      {val:1,label:'Siempre'},{val:2,label:'Casi siempre'},{val:3,label:'A veces'},{val:4,label:'Nunca'}
+    ], 'DF')}
+    ${renderQCard(16, '¿Con qué frecuencia su hijo(a) participa en actividades recreativas al aire libre con otros niños de su edad?', [
+      {val:1,label:'Siempre'},{val:2,label:'Casi siempre'},{val:3,label:'A veces'},{val:4,label:'Nunca'}
+    ], 'DF')}
+
+    <div class="section-note amber" style="margin-top:0.5rem">
+      Los ítems P26 y P27 usan escala 1–5 y se reescalan a 1–4 automáticamente.
+    </div>
+    ${renderQCard(26, '¿Con qué frecuencia en la última semana su hijo(a) se reunió con amigos para hacer actividades?', [
+      {val:1,label:'Todos los días'},{val:2,label:'Varios días'},{val:3,label:'Una vez'},{val:4,label:'Ningún día'},{val:5,label:'Muy pequeño'}
+    ], 'DF · reescalado')}
+    ${renderQCard(27, '¿Con qué frecuencia en la última semana su hijo(a) participó en educación física/recreo?', [
+      {val:1,label:'Todos los días'},{val:2,label:'Varios días'},{val:3,label:'Una vez'},{val:4,label:'Ningún día'},{val:5,label:'Muy pequeño'}
+    ], 'DF · reescalado')}
+
+    <div style="margin-top:1rem;margin-bottom:0.4rem;font-size:0.82rem;color:var(--text2);font-weight:500">
+      Participación en deportes (con recodificación condicional automática)
+    </div>
+
+    ${renderQCard(36, '¿Puede su hijo(a) participar en actividades recreativas al aire libre?', [
+      {val:1,label:'Sí, siempre'},{val:2,label:'Casi siempre'},{val:3,label:'A veces'},{val:4,label:'No puede'}
+    ], 'DF')}
+    <div class="question-card" style="background:var(--surface2);border-style:dashed;padding:0.7rem 1.2rem;margin-bottom:0.6rem">
+      <div class="question-num">Condicional P36 <span class="question-tag">Solo si respondió "No puede" arriba</span></div>
+      <div class="question-text" style="font-size:0.82rem;color:var(--text2)">¿La razón por la que no puede es...?</div>
+      <div class="options-row">
+        <button class="opt-btn ${getVal(42)===1?'selected':''}" onclick="setQ(42,1)">Muy pequeño (P42)</button>
+        <button class="opt-btn ${getVal(43)===1?'selected':''}" onclick="setQ(43,1)">Fuera de temporada (P43)</button>
+        <button class="opt-btn ${getVal(42)===0?'selected':''}" onclick="setQ(42,0);setQ(43,0)">Ninguna / N/A</button>
+      </div>
+    </div>
+
+    ${renderQCard(44, '¿Puede su hijo(a) participar en juegos de deportes informales?', [
+      {val:1,label:'Sí, siempre'},{val:2,label:'Casi siempre'},{val:3,label:'A veces'},{val:4,label:'No puede'}
+    ], 'DF')}
+    <div class="question-card" style="background:var(--surface2);border-style:dashed;padding:0.7rem 1.2rem;margin-bottom:0.6rem">
+      <div class="question-num">Condicional P44</div>
+      <div class="question-text" style="font-size:0.82rem;color:var(--text2)">¿La razón es...?</div>
+      <div class="options-row">
+        <button class="opt-btn ${getVal(50)===1?'selected':''}" onclick="setQ(50,1)">Muy pequeño (P50)</button>
+        <button class="opt-btn ${getVal(51)===1?'selected':''}" onclick="setQ(51,1)">Fuera de temporada (P51)</button>
+        <button class="opt-btn ${getVal(50)===0?'selected':''}" onclick="setQ(50,0);setQ(51,0)">Ninguna / N/A</button>
+      </div>
+    </div>
+
+    ${renderQCard(52, '¿Puede su hijo(a) participar en deportes a nivel competitivo?', [
+      {val:1,label:'Sí, siempre'},{val:2,label:'Casi siempre'},{val:3,label:'A veces'},{val:4,label:'No puede'}
+    ], 'DF')}
+    <div class="question-card" style="background:var(--surface2);border-style:dashed;padding:0.7rem 1.2rem;margin-bottom:0.6rem">
+      <div class="question-num">Condicional P52</div>
+      <div class="question-text" style="font-size:0.82rem;color:var(--text2)">¿La razón es...?</div>
+      <div class="options-row">
+        <button class="opt-btn ${getVal(58)===1?'selected':''}" onclick="setQ(58,1)">Muy pequeño (P58)</button>
+        <button class="opt-btn ${getVal(59)===1?'selected':''}" onclick="setQ(59,1)">Fuera de temporada (P59)</button>
+        <button class="opt-btn ${getVal(58)===0?'selected':''}" onclick="setQ(58,0);setQ(59,0)">Ninguna / N/A</button>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn btn-secondary" onclick="goTo('s2')">← Ant.</button>
+        <button class="btn btn-secondary" onclick="goTo('s4')">Siguiente →</button>
+      </div>
+      <button class="btn btn-success" onclick="goTo('results')">Ver resultados</button>
+    </div>
+  </div>`;
+}
+
+function renderScale4() {
+  return `
+  <div>
+    <div class="section-header">
+      <div class="section-badge" style="background:#ede8f6;color:var(--scale4)">DC</div>
+      <div>
+        <div class="section-title" style="color:var(--scale4)">Dolor y Comodidad</div>
+        <div class="section-subtitle">3 ítems · Mínimo 2 para calcular la puntuación</div>
+      </div>
+    </div>
+    <div class="section-note">
+      <strong>Nota:</strong> Las puntuaciones más altas en esta escala indican <em>mayor bienestar</em> (menos dolor). El ítem P17 ya registrado en la escala anterior se reutiliza aquí con reescalado diferente.
+    </div>
+
+    <div class="question-card ${getVal(17)?'answered':''}" id="qcard-17b">
+      <div class="question-num">P17 <span class="question-tag">Compartido con TM</span></div>
+      <div class="question-text">¿Con qué frecuencia su hijo(a) necesita ayuda de otra persona para sentarse y pararse?</div>
+      <div class="options-row">${OPTS_HELP_4.map(o => `<button class="opt-btn ${getVal(17)===o.val?'selected':''}" onclick="setQ(17,${o.val})">${o.label}</button>`).join('')}</div>
+      <div style="font-size:0.72rem;color:var(--text3);margin-top:0.5rem">Se reescala internamente: [(4 − valor) × 4/3] + 1</div>
+    </div>
+
+    ${renderQCard(75, '¿Cuánto dolor ha tenido su hijo(a) en la última semana?', [
+      {val:1,label:'Ninguno'},{val:2,label:'Muy poco'},{val:3,label:'Poco'},{val:4,label:'Moderado'},{val:5,label:'Bastante'},{val:6,label:'No aplica'}
+    ], 'DC')}
+
+    ${renderQCard(76, '¿Cuánto malestar/dolor ha sentido su hijo(a)?', OPTS_PAIN, 'DC')}
+
+    <div class="nav-row">
+      <div style="display:flex;gap:0.5rem">
+        <button class="btn btn-secondary" onclick="goTo('s3')">← Ant.</button>
+        <button class="btn btn-secondary" onclick="goTo('s5')">Siguiente →</button>
+      </div>
+      <button class="btn btn-success" onclick="goTo('results')">Ver resultados</button>
+    </div>
+  </div>`;
+}
+
+function renderScale5() {
+  return `
+  <div>
+    <div class="section-header">
+      <div class="section-badge" style="background:#f8f0e0;color:var(--scale5)">BF</div>
+      <div>
+        <div class="section-title" style="color:var(--scale5)">Bienestar / Felicidad</div>
+        <div class="section-subtitle">5 ítems · Mínimo 3 para calcular la puntuación</div>
+      </div>
+    </div>
+    <div class="section-note">
+      <strong>Escala de respuesta:</strong> 1 = Muy feliz · 5 = Muy infeliz · 6 = No aplica (dato faltante)
+    </div>
+
+    ${renderQCard(10, '¿Qué tan feliz se siente su hijo(a) con su apariencia física (cómo se ve)?', OPTS_HAPPY, 'BF')}
+    ${renderQCard(11, '¿Qué tan feliz se siente su hijo(a) con su cuerpo?', OPTS_HAPPY, 'BF')}
+    ${renderQCard(12, '¿Qué tan feliz se siente su hijo(a) con la ropa o zapatos que puede usar?', OPTS_HAPPY, 'BF')}
+    ${renderQCard(13, '¿Qué tan feliz se siente su hijo(a) con su capacidad para hacer las mismas cosas que sus amigos?', OPTS_HAPPY, 'BF')}
+    ${renderQCard(14, '¿Qué tan feliz se siente su hijo(a) con su salud en general?', OPTS_HAPPY, 'BF')}
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goTo('s4')">← Anterior</button>
+      <button class="btn btn-success" onclick="goTo('results')">Ver resultados →</button>
+    </div>
+  </div>`;
+}
+
+function renderResults() {
+  const s = computeAll();
+  const g = computeGlobal(s);
+
+  const scaleNames = {
+    s1: 'Extremidad Superior',
+    s2: 'Transferencias y Movilidad',
+    s3: 'Deportes y Función Física',
+    s4: 'Dolor y Comodidad',
+    s5: 'Bienestar / Felicidad',
+  };
+  const scaleColors = {
+    s1: 'var(--scale1)', s2: 'var(--scale2)', s3: 'var(--scale3)', s4: 'var(--scale4)', s5: 'var(--scale5)'
+  };
+
+  // Interpretation: label, color, description
+  function interpData(norm) {
+    if (norm === null) return null;
+    if (norm < 20)  return { label: 'Compromiso severo',    bg: '#f6e8e8', border: '#d06a6a', color: '#8a2d2d', desc: 'Función muy por debajo de la población sana (>2.5 DE)' };
+    if (norm < 35)  return { label: 'Compromiso moderado-severo', bg: '#faeade', border: '#d4906a', color: '#8a4020', desc: 'Función claramente inferior a la norma (1.5–2.5 DE)' };
+    if (norm < 45)  return { label: 'Por debajo de la norma', bg: '#faf3e0', border: '#d4b06a', color: '#8a6020', desc: 'Función inferior a la media de la población sana (0.5–1.5 DE)' };
+    if (norm <= 55) return { label: 'Dentro de la norma',   bg: '#e8f3ec', border: '#6abf8a', color: '#2d6b45', desc: 'Función comparable a la población pediátrica sana (±0.5 DE)' };
+    return             { label: 'Por encima de la norma', bg: '#e8eef6', border: '#7aaad4', color: '#2d5a8e', desc: 'Función superior a la media de la población sana' };
+  }
+
+  // Normative gauge: maps norm score to position on a visual scale
+  // Display range: -80 to +60 (covers all possible scores)
+  function normGauge(norm, color) {
+    const minVal = -80, maxVal = 60, total = maxVal - minVal;
+    // Zones as % of total width
+    const zones = [
+      { from: -80, to:  20, bg: '#f8e8e8' },  // severe
+      { from:  20, to:  35, bg: '#faeade' },  // mod-severe
+      { from:  35, to:  45, bg: '#faf3e0' },  // below
+      { from:  45, to:  55, bg: '#e8f3ec' },  // normal
+      { from:  55, to:  60, bg: '#e8eef6' },  // above
+    ];
+    const zonesHtml = zones.map(z => {
+      const left = (z.from - minVal) / total * 100;
+      const width = (z.to - z.from) / total * 100;
+      return `<div style="position:absolute;left:${left}%;width:${width}%;height:100%;background:${z.bg}"></div>`;
+    }).join('');
+
+    // Reference line at 50
+    const ref50 = (50 - minVal) / total * 100;
+    // Marker position
+    const markerPct = Math.max(0, Math.min(100, (norm - minVal) / total * 100));
+
+    return `
+    <div style="position:relative;height:28px;border-radius:4px;overflow:hidden;border:1px solid var(--border);margin:0.6rem 0 0.3rem">
+      ${zonesHtml}
+      <!-- Reference tick at 50 (population mean) -->
+      <div style="position:absolute;left:${ref50}%;top:0;width:2px;height:100%;background:rgba(0,0,0,0.15)"></div>
+      <div style="position:absolute;left:${ref50}%;top:2px;font-size:0.55rem;color:rgba(0,0,0,0.35);transform:translateX(-50%);font-family:'DM Mono',monospace;white-space:nowrap">50</div>
+      <!-- Score marker -->
+      <div style="position:absolute;left:${markerPct}%;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;background:${color};border-radius:50%;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.3);z-index:2"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:0.4rem">
+      <span>−80</span><span style="color:rgba(0,0,0,0.25)">←  peor · mejor  →</span><span>+60</span>
+    </div>`;
+  }
+
+  const cards = Object.keys(scaleNames).map(k => {
+    const sc = s[k];
+    if (sc.std === null) {
+      return `<div class="result-card result-missing">
+        <div>
+          <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);margin-bottom:0.4rem">${scaleNames[k]}</div>
+          Sin puntuación — ${sc.nValid}/${sc.nRequired} ítems mínimos
+        </div>
+      </div>`;
+    }
+    const iData = interpData(sc.norm);
+    const pct = Math.max(0, Math.min(100, sc.std));
+    return `<div class="result-card">
+      <div class="result-card-name">${scaleNames[k]}</div>
+      <div style="display:flex;align-items:baseline;gap:1rem;margin-bottom:0.2rem">
+        <div class="result-card-std" style="color:${scaleColors[k]}">${sc.std}</div>
+        <div style="text-align:right">
+          <div style="font-family:'DM Mono',monospace;font-size:1.1rem;color:var(--text)">${sc.norm}</div>
+          <div style="font-size:0.65rem;color:var(--text3)">normativa</div>
+        </div>
+      </div>
+      ${normGauge(sc.norm, scaleColors[k])}
+      <div style="display:inline-flex;align-items:center;gap:0.4rem;background:${iData.bg};border:1px solid ${iData.border};border-radius:4px;padding:0.25rem 0.6rem;margin-bottom:0.4rem">
+        <span style="font-size:0.72rem;font-weight:600;color:${iData.color}">${iData.label}</span>
+      </div>
+      <div style="font-size:0.7rem;color:var(--text3);line-height:1.4">${iData.desc}</div>
+      <div class="result-card-items" style="margin-top:0.5rem">${sc.nValid} de ${sc.nTotal} ítems válidos</div>
+    </div>`;
+  }).join('');
+
+  const globalHtml = g ? `
+    <div class="global-result">
+      <div>
+        <div class="global-result-label">Función Global</div>
+        <div class="global-result-sub">Promedio normalizado de las 4 escalas principales</div>
+      </div>
+      <div style="text-align:right">
+        <div class="global-result-val">${g.norm}</div>
+        <div class="global-result-sub">puntuación normativa</div>
+      </div>
+    </div>` :
+    `<div class="section-note amber">La puntuación global requiere las 4 escalas principales calculadas. Complete los ítems faltantes.</div>`;
+
+  const tableRows = Object.keys(scaleNames).map(k => {
+    const sc = s[k];
+    return `<tr>
+      <td>${scaleNames[k]}</td>
+      <td class="num-cell">${sc.nValid}/${sc.nTotal}</td>
+      <td class="num-cell">${sc.std !== null ? sc.std : '—'}</td>
+      <td class="num-cell">${sc.norm !== null ? sc.norm : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  const globalRow = g ? `<tr style="font-weight:600;border-top:2px solid var(--border)">
+    <td>Función Global</td><td class="num-cell">—</td>
+    <td class="num-cell">${g.std}</td><td class="num-cell">${g.norm}</td></tr>` : '';
+
+  return `
+  <div class="results-page">
+    <div class="section-header">
+      <div class="section-badge" style="background:var(--green-light);color:var(--green)">✓</div>
+      <div>
+        <div class="section-title">Resultados PODCI</div>
+        <div class="section-subtitle">
+          ${patient.nombre ? patient.nombre : 'Paciente'} ${patient.edad ? '· '+patient.edad+' años' : ''} ${patient.fecha ? '· '+patient.fecha : ''}
+        </div>
+      </div>
+    </div>
+
+    ${globalHtml}
+
+    <div class="results-grid">${cards}</div>
+
+    <div class="print-section">
+      <h3>Resumen para historia clínica</h3>
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th>Escala</th>
+            <th style="text-align:right">Ítems válidos</th>
+            <th style="text-align:right">Puntuación estandarizada (0–100)</th>
+            <th style="text-align:right">Puntuación normativa (ref. 50)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+          ${globalRow}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-note" style="margin-top:1rem;font-size:0.75rem">
+      <strong>Interpretación:</strong> La puntuación estandarizada (0–100) representa el porcentaje de función respecto al máximo teórico. La puntuación normativa está referenciada a la media de la población pediátrica sana (= 50); valores inferiores a 50 indican función por debajo de la norma. Fuente del algoritmo: Daltroy et al., J Pediatr Orthop 1998; Wren et al., J Pediatr Orthop 2008.
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goTo('s5')">← Editar respuestas</button>
+      <button class="btn btn-primary" onclick="window.print()">⎙ Imprimir / Guardar PDF</button>
+    </div>
+  </div>`;
+}
+
+// ─────────────────────────────────────────────
+// EVENTS
+// ─────────────────────────────────────────────
+
+function setQ(qNum, val) {
+  R['Q'+qNum] = val;
+  updateLive();
+  // Update button states in current view
+  const card = document.getElementById('qcard-'+qNum);
+  if (card) {
+    card.classList.add('answered');
+    card.querySelectorAll('.opt-btn').forEach(btn => {
+      btn.classList.remove('selected');
+      if (parseInt(btn.getAttribute('onclick').match(/\d+/g)[1]) === val) {
+        btn.classList.add('selected');
+      }
+    });
+  }
+  // Also refresh conditional items
+  if ([36,44,52,42,43,50,51,58,59].includes(qNum) && currentPage === 's3') {
+    renderPage('s3');
+  }
+}
+
+function bindEvents(page) {
+  // patient form autosave
+  ['f-nombre','f-hc','f-edad','f-sexo','f-fecha'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', savePaciente);
+  });
+}
+
+function resetAll() {
+  if (!confirm('¿Desea comenzar una nueva evaluación? Se perderán todos los datos actuales.')) return;
+  Object.keys(R).forEach(k => delete R[k]);
+  Object.keys(patient).forEach(k => patient[k] = '');
+  updateLive();
+  goTo('intro');
+}
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+renderPage('intro');
+updateLive();
+</script>
+</body>
+</html>
